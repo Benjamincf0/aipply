@@ -1,7 +1,7 @@
 import express, { application, Request, Response } from 'express';
 // import sessionRoutes from 'routes/session';
-import applicationRoutes from './routes/apply';
-import searchRoutes from './routes/search';
+import applicationRoutes from './routes/apply.js';
+import searchRoutes from './routes/search.js';
 
 
 const app = express();

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { applyController } from '../controllers/applyController';
+import { applyController } from '../controllers/applyController.js';
 import { z } from 'zod';
 const router = express.Router();
 

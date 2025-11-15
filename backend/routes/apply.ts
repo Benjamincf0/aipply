@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
-import { applyController } from '../controllers/applyController';
-import getSessionID from '../middleware/sessionMiddleware';
+import { applyController } from '../controllers/applyController.js';
+import getSession from '../middleware/sessionMiddleware.js';
 const router = express.Router();
 
-router.route('/').get(applyController.listCurrent)  // List currently processing applications
-    .post(getSessionID, applyController.create) // Add 1 or more new application to the queue
+router.route('/').post(applyController.listCurrent)  // List currently processing applications
+    .get(getSession, applyController.create) // Add 1 or more new application to the queue
     .delete(applyController.delete); // Delete an application from the queue using its ID as a query param
 
 export default router;

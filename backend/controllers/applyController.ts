@@ -16,9 +16,9 @@ export const applyController = {
   create: async (req: Request, res: Response) => {
     // TODO: start processing applications using Browserbase session
     // return session ID to client for tracking in response
-    const sessionID = process.env.BROWSERBASE_SESSION_ID
-    console.log('Creating new application with session ID:', sessionID);
-    res.json({ message: 'Application(s) added to the queue', sessionID: sessionID });
+    const stagehand = global.stagehand;
+    console.log('Creating new application with session ID:', stagehand.browserbaseSessionID);
+    res.json({ message: `Application(s) added to the queue https://browserbase.com/sessions/${stagehand.browserbaseSessionID}`, sessionID: stagehand.browserbaseSessionID });
   },
 
   // DELETE /apply/:id

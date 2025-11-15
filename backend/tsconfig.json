@@ -12,6 +12,6 @@
     "allowImportingTsExtensions": false,
     "noEmit": false
   },
-  "include": ["*.ts"],
+  "include": ["*.ts", "*/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
