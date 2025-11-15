@@ -8,6 +8,7 @@ export const JobSchema = z.object({
   location: z.string().optional(),
   applyUrl: z.string().optional(),
   description: z.string().optional(),
+  link: z.string().optional(),
 });
 
 export const ApplicationStatusSchema = z.object({
@@ -111,4 +112,3 @@ export type WorkExperience = z.infer<typeof WorkExperienceSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type ApplicantProfile = z.infer<typeof ApplicantProfileSchema>;
-

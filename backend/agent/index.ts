@@ -14,10 +14,9 @@ try {
   GOOGLE_GENERATIVE_AI_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY!;
 } catch (e) {
   throw new Error(
-    "BROWSERBASE_PROJECT_ID and BROWSERBASE_API_KEY must be set in environment variables to run this example. Please check your .env file."
+    "BROWSERBASE_PROJECT_ID and BROWSERBASE_API_KEY must be set in environment variables to run this example. Please check your .env file.",
   );
 }
-
 
 async function main() {
   const stagehand = new Stagehand({
@@ -25,13 +24,12 @@ async function main() {
     model: "google/gemini-2.0-flash-lite",
   });
 
-
   try {
     await stagehand.init();
 
     console.log(`Stagehand Session Started`);
     console.log(
-      `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`
+      `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`,
     );
 
     const page = stagehand.context.pages()[0];
@@ -46,7 +44,7 @@ async function main() {
     // 2. Filter jobs that have career page URLs
     const jobsWithCareerPages = jobs.filter((job) => job.applyUrl);
     console.log(
-      `\nFound ${jobsWithCareerPages.length} jobs with career page URLs`
+      `\nFound ${jobsWithCareerPages.length} jobs with career page URLs`,
     );
 
     if (jobsWithCareerPages.length === 0) {
@@ -55,33 +53,31 @@ async function main() {
     }
 
     // 3. Apply to jobs using the applicant profile
-    // const applicationResults = await applyToJobs(
-    //   jobsWithCareerPages,
-    //   APPLICANT_PROFILE,
-    //   stagehand,
-    //   page
-    // );
+    const applicationResults = await applyToJobs(
+      jobsWithCareerPages,
+      APPLICANT_PROFILE,
+      stagehand,
+      page,
+    );
 
-    // // 4. Display detailed results
-    // console.log("\nDetailed Results:\n");
-    // for (const result of applicationResults.results) {
-    //   const statusIcon =
-    //     result.status === "applied"
-    //       ? "✅"
-    //       : result.status === "skipped"
-    //       ? "⊘"
-    //       : "❌";
-    //   console.log(
-    //     `${statusIcon} ${result.job.title} at ${
-    //       result.job.company
-    //     } - ${result.status.toUpperCase()}`
-    //   );
-    //   if (result.reason) {
-    //     console.log(`   Reason: ${result.reason}`);
-    //   }
-    // }
-
-    
+    // 4. Display detailed results
+    console.log("\nDetailed Results:\n");
+    for (const result of applicationResults.results) {
+      const statusIcon =
+        result.status === "applied"
+          ? "✅"
+          : result.status === "skipped"
+            ? "⊘"
+            : "❌";
+      console.log(
+        `${statusIcon} ${result.job.title} at ${
+          result.job.company
+        } - ${result.status.toUpperCase()}`,
+      );
+      if (result.reason) {
+        console.log(`   Reason: ${result.reason}`);
+      }
+    }
 
     console.log("\n✅ Job application automation completed!");
   } catch (error) {

@@ -10,7 +10,6 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useCallback } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 import z from "zod";
 
@@ -20,22 +19,19 @@ type ApplyFormProps = {
 };
 
 export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      await submit();
-    },
-    [],
-  );
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await submit();
+  };
 
-  const submit = useCallback(async () => {
+  async function submit() {
     {
       setData(undefined);
     }
     {
       const formData = new FormData(formRef.current);
-      console.log("formData:", formData);
-      const json = JSON.stringify(formData);
+      const d = Object.fromEntries(formData.entries());
+      const json = JSON.stringify(d);
 
       const res = await fetch("http://localhost:8080/api/job/search", {
         method: "POST",
@@ -55,7 +51,7 @@ export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
 
       setData(parsedData.data);
     }
-  }, []);
+  }
 
   const debounced = useDebounceCallback(submit, 500);
 
