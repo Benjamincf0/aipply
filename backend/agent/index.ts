@@ -94,7 +94,7 @@ async function getJobsFromJobBoard(
 
     // 3. Extract the data from those cards
     const jobData = await stagehand.extract(
-      "Extract the job title, company name, and location from first 3 job listing cards/containers on this page",
+      "Extract the job title, company name, and location from the job listing cards/containers on this page",
       z.object({
         jobs: z.array(JobSchema),
       })
