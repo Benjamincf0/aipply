@@ -1,7 +1,10 @@
 {
   "name": "my-stagehand-app",
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx agent/index.ts"
+  },
   "dependencies": {
     "@browserbasehq/stagehand": "latest",
     "bullmq": "^5.63.2",
