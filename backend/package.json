@@ -4,11 +4,14 @@
   "scripts": {},
   "dependencies": {
     "@browserbasehq/stagehand": "latest",
+    "bullmq": "^5.63.2",
     "dotenv": "^16.4.7",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
+    "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.11",
     "tsx": "^4.19.2",
     "typescript": "^5.0.0"

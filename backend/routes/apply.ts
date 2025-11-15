@@ -1,9 +1,10 @@
 import express, { Request, Response } from 'express';
 import { applyController } from '../controllers/applyController';
+import getSessionID from '../middleware/sessionMiddleware';
 const router = express.Router();
 
-router.get('/', applyController.list);   // List sites (passwords masked)
-router.post('/', applyController.create); // { site, username, password }
-router.delete('/:id', applyController.delete);
+router.route('/').get(applyController.listCurrent)  // List currently processing applications
+    .post(getSessionID, applyController.create) // Add 1 or more new application to the queue
+    .delete(applyController.delete); // Delete an application from the queue using its ID as a query param
 
 export default router;

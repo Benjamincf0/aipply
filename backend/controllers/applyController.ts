@@ -1,31 +1,31 @@
 import { Request, Response } from 'express';
 
 export const applyController = {
-  // GET /api/apply?status=applying&page=1
-  list: async (req: Request, res: Response) => {
+  // GET /apply?status=applying&page=1
+  listCurrent: async (req: Request, res: Response) => {
     console.log('Listing applications with query:', req.query);
-    res.send('List of applications');
-    // get the job applications currently being processed on browserbase
+    const applications = [
+      { id: 1, title: 'Software Engineer', company: 'Tech Corp', status: 'Processing' },
+      { id: 2, title: 'Frontend Developer', company: 'Web Solutions', status: 'interviewing' },
+      { id: 3, title: 'Backend Developer', company: 'Data Systems', status: 'offered' },
+    ];
+    res.json({ applications: applications});
   },
 
-  // POST /api/apply { title, company, url, resumeId? }
+  // POST /apply
   create: async (req: Request, res: Response) => {
-    console.log('Creating application with body:', req.body);
-    res.send('List of applications');
-    // add a new job application to the queue
+    // TODO: start processing applications using Browserbase session
+    // return session ID to client for tracking in response
+    const sessionID = process.env.BROWSERBASE_SESSION_ID
+    console.log('Creating new application with session ID:', sessionID);
+    res.json({ message: 'Application(s) added to the queue', sessionID: sessionID });
   },
 
-  // POST /api/apply/batch [{ title, company, url }, ...]
-  batchCreate: async (req: Request, res: Response) => {
-    console.log('Creating batch applications with body:', req.body);
-    res.send('List of applications');
-    // add multiple job applications to the queue
-  },
-
-  // DELETE /api/apply/:id
+  // DELETE /apply/:id
   delete: async (req: Request, res: Response) => {
-    console.log('Deleting application with id:', req.params.id);
-    res.send('List of applications');
+    const id = req.params.id;
+    console.log('Deleting application with id:', id);
+    res.send(`Deleted application ${id} from the queue`);
     // delete a job application from the queue
   }
 };
