@@ -12,6 +12,20 @@ export const JobSchema = z.object({
 
 export type JobSchema = z.infer<typeof JobSchema>;
 
+export const SearchJobSchema = z.object({
+  query: z.string().min(1),
+  location: z.string().optional(),
+  type: z.enum(["full-time", "part-time", "contract"]).optional(),
+});
+
+export type SearchJobInput = z.infer<typeof SearchJobSchema>;
+
+export const JobSearchResponseSchema = z.object({
+  jobs: z.array(JobSchema),
+});
+
+export type JobSearchResponse = z.infer<typeof JobSearchResponseSchema>;
+
 export const WorkExperienceSchema = z.object({
   company: z.string(),
   role: z.string(),

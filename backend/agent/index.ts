@@ -18,11 +18,13 @@ try {
   );
 }
 
+
 async function main() {
   const stagehand = new Stagehand({
     env: "LOCAL",
     model: "google/gemini-2.0-flash-lite",
   });
+
 
   try {
     await stagehand.init();
@@ -53,31 +55,33 @@ async function main() {
     }
 
     // 3. Apply to jobs using the applicant profile
-    const applicationResults = await applyToJobs(
-      jobsWithCareerPages,
-      APPLICANT_PROFILE,
-      stagehand,
-      page
-    );
+    // const applicationResults = await applyToJobs(
+    //   jobsWithCareerPages,
+    //   APPLICANT_PROFILE,
+    //   stagehand,
+    //   page
+    // );
 
-    // 4. Display detailed results
-    console.log("\nDetailed Results:\n");
-    for (const result of applicationResults.results) {
-      const statusIcon =
-        result.status === "applied"
-          ? "✅"
-          : result.status === "skipped"
-          ? "⊘"
-          : "❌";
-      console.log(
-        `${statusIcon} ${result.job.title} at ${
-          result.job.company
-        } - ${result.status.toUpperCase()}`
-      );
-      if (result.reason) {
-        console.log(`   Reason: ${result.reason}`);
-      }
-    }
+    // // 4. Display detailed results
+    // console.log("\nDetailed Results:\n");
+    // for (const result of applicationResults.results) {
+    //   const statusIcon =
+    //     result.status === "applied"
+    //       ? "✅"
+    //       : result.status === "skipped"
+    //       ? "⊘"
+    //       : "❌";
+    //   console.log(
+    //     `${statusIcon} ${result.job.title} at ${
+    //       result.job.company
+    //     } - ${result.status.toUpperCase()}`
+    //   );
+    //   if (result.reason) {
+    //     console.log(`   Reason: ${result.reason}`);
+    //   }
+    // }
+
+    
 
     console.log("\n✅ Job application automation completed!");
   } catch (error) {
@@ -87,8 +91,3 @@ async function main() {
     await stagehand.close();
   }
 }
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
