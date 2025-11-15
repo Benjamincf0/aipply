@@ -18,12 +18,12 @@ try {
   );
 }
 
-const stagehand = new Stagehand({
-  env: "LOCAL",
-  model: "google/gemini-2.0-flash-lite",
-});
-
 async function main() {
+  const stagehand = new Stagehand({
+    env: "LOCAL",
+    model: "google/gemini-2.0-flash-lite",
+  });
+
   try {
     await stagehand.init();
 
