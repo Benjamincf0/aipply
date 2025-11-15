@@ -7,84 +7,234 @@ async function findSpecificJobOnCareerPage(
   stagehand: Stagehand,
   page: Page
 ): Promise<boolean> {
-  const MAX_PAGINATION_PAGES = 5;
-  let currentPage = 0;
-
-  console.log(`\nSearching for job: "${job.title}" at ${job.company}`);
+  console.log(`\n🔍 Searching for job: "${job.title}" at ${job.company}`);
 
   if (!job.applyUrl) {
-    console.warn(`No career page URL provided for ${job.title}`);
+    console.warn(`⚠️ No career page URL provided for ${job.title}`);
     return false;
   }
 
   try {
-    await page.goto(job.applyUrl, { waitUntil: "networkidle" });
-    new Promise((resolve) => setTimeout(resolve, 1500));
+    // Navigate to career page
+    try {
+      await page.goto(job.applyUrl, { waitUntil: "networkidle" });
+    } catch {
+      console.warn(`⚠️ Timeout loading page, continuing...`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // 1. Handle popups
+    // Handle popups first
     await handlePopups(stagehand, page);
 
-    // 2. Analyze the page structure
-    const pageStructure = await analyzeCareersPageStructure(stagehand);
+    // Prepare job search context
+    const jobSearchContext = `
+JOB TO FIND:
+Title: "${job.title}"
+Company: ${job.company}
+${
+  job.description
+    ? `Description contains: "${job.description.substring(0, 200)}"`
+    : ""
+}
 
-    // Look for the specific job on the career page
+Your task is to find this specific job listing on this careers page. You may need to:
+1. Search through job listings directly visible on the page
+2. Use search filters or search boxes to filter jobs by title
+3. Navigate through pagination (click "Next", page numbers, or arrows)
+4. Click on links like "View All Jobs", "See Open Positions", "Job Listings" to navigate to the actual listings page
+5. Explore different sections or tabs if jobs are organized by category
+
+When you find a job listing that matches the title "${
+      job.title
+    }", click on it to open the job details page.
+`;
+
+    console.log(`   🤖 Using AI agent to explore and find the job...`);
+
+    // Use agent to intelligently explore and find the job
+    const agent = stagehand.agent({
+      systemPrompt: `You are an AI assistant helping to find a specific job listing on a company's careers page.
+
+${jobSearchContext}
+
+You should:
+- First check if the job is directly visible on the current page
+- If not found, look for search/filter options and use them to find the job
+- If there are links to job listings pages, follow them
+- Navigate through pagination if needed (up to 5 pages)
+- Click on the job listing when you find it to open the job details page
+- Be thorough and explore all available options
+
+IMPORTANT: Only click on the job listing that matches the title "${job.title}". Once you've clicked on it and navigated to the job details page, your task is complete.`,
+    });
+
+    const MAX_ITERATIONS = 20;
+    let iteration = 0;
     let found = false;
 
-    if (pageStructure === "job-board") {
-      found = await searchUsingFilters(job, stagehand, page);
-    } else if (pageStructure === "link-to-listings") {
-      found = await navigateToListingsPage(job, stagehand, page);
-    } else {
-      found = await searchDirectListings(
-        job,
-        stagehand,
-        page,
-        MAX_PAGINATION_PAGES
+    // Iteratively search for the job
+    while (iteration < MAX_ITERATIONS && !found) {
+      iteration++;
+      console.log(`   📋 Iteration ${iteration}: Exploring page...`);
+
+      // Check if we're on a job details page (success!)
+      const isJobDetailsPage = await stagehand.extract(
+        `Check if this page shows details for a specific job. Look for:
+        - Job title matching "${job.title}"
+        - Job description or details
+        - "Apply" button for this specific job
+        - Job-specific information`,
+        z.object({
+          isJobDetailsPage: z.boolean(),
+          jobTitle: z.string().optional(),
+        })
       );
+
+      if (isJobDetailsPage.isJobDetailsPage) {
+        const pageTitle = isJobDetailsPage.jobTitle || "";
+        if (
+          pageTitle.toLowerCase().includes(job.title.toLowerCase()) ||
+          job.title.toLowerCase().includes(pageTitle.toLowerCase())
+        ) {
+          console.log(`   ✅ Found job details page for "${job.title}"`);
+          found = true;
+          break;
+        }
+      }
+
+      // Use agent to explore and find the job
+      const result = await agent.execute({
+        instruction: `Look at the current page. Find the job listing for "${job.title}". If you see it, click on it. If not, explore the page - use search filters, navigate pagination, or follow links to job listings. Continue until you find and click on the job listing.`,
+        highlightCursor: true,
+      });
+
+      console.log(`   Agent action completed`);
+
+      // Wait for page to update
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Check if we navigated to job details
+      try {
+        await page.waitForLoadState("networkidle", 5000);
+      } catch {
+        // Continue anyway
+      }
+
+      // Verify if we're on the job details page now
+      const verifyJobPage = await stagehand.extract(
+        `Check if this page is now showing the job details for "${job.title}". Look for the job title, description, or apply button.`,
+        z.object({
+          isJobDetailsPage: z.boolean(),
+          foundJobTitle: z.boolean(),
+        })
+      );
+
+      if (verifyJobPage.isJobDetailsPage || verifyJobPage.foundJobTitle) {
+        console.log(`   ✅ Successfully navigated to job details page`);
+        found = true;
+        break;
+      }
+
+      // Check if there are still job listings or navigation options
+      const hasMoreOptions = await stagehand.extract(
+        `Are there still options to explore on this page? Check for:
+        - Job listings that haven't been checked
+        - Pagination buttons (Next, page numbers)
+        - Search/filter options
+        - Links to other job listing pages`,
+        z.object({
+          hasMoreOptions: z.boolean(),
+          hasPagination: z.boolean(),
+          hasSearchFilters: z.boolean(),
+        })
+      );
+
+      if (!hasMoreOptions.hasMoreOptions) {
+        console.log(`   ⚠️ No more options to explore`);
+        break;
+      }
     }
-    return found;
+
+    if (found) {
+      console.log(
+        `   ✅ Successfully found and navigated to job: "${job.title}"`
+      );
+      return true;
+    } else {
+      console.warn(
+        `   ⚠️ Could not find job "${job.title}" after ${iteration} iterations`
+      );
+      return false;
+    }
   } catch (error) {
     console.error(
-      `Error searching for job "${job.title}":`,
-      (error as Error).message
+      `   ❌ Error searching for job "${job.title}": ${
+        (error as Error).message
+      }`
     );
     return false;
   }
 }
 
 async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
-  console.log("Checking for popups...");
+  console.log("   🔍 Checking for popups and overlays...");
 
-  // Handle cookie consent
-  try {
-    const cookieActions = await stagehand.observe(
-      `Find and click the "Accept All", "Allow All", "Accept All Cookies", or similar button to accept cookies. Look for cookie consent banners at the top or bottom of the page.`,
-      { timeout: 3000 }
-    );
+  // Handle cookie consent - try multiple times as popups may appear after page load
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const cookieActions = await stagehand.observe(
+        `Find and click buttons to accept cookies. Look for buttons with text like "Accept All", "Allow All", "Accept All Cookies", "I Accept", "Accept", "Allow Cookies", or similar. These are usually in banners at the top or bottom of the page.`,
+        { timeout: 2000 }
+      );
 
-    if (cookieActions.length > 0) {
-      console.log("   ✓ Accepting cookies...");
-      await stagehand.act(cookieActions[0]);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (cookieActions.length > 0) {
+        console.log("   ✓ Accepting cookies...");
+        await stagehand.act(cookieActions[0]);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Check again in case another popup appears
+        continue;
+      }
+    } catch {
+      // No cookie popup found, continue
     }
-  } catch {
-    // No cookie popup found, continue
+    break;
   }
 
-  // Handle ads
+  // Handle ads, modals, and overlays
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const adCloseActions = await stagehand.observe(
+        `Find and click the close button (X, ✕, ×, Close, or similar) on any ads, popups, modal dialogs, or overlays that are blocking or covering the page content. Look for close buttons in the top-right corner of popups or banners.`,
+        { timeout: 2000 }
+      );
+
+      if (adCloseActions.length > 0) {
+        console.log("   ✓ Closing popup/ad...");
+        await stagehand.act(adCloseActions[0]);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Check again in case another popup appears
+        continue;
+      }
+    } catch {
+      // No ads found, continue
+    }
+    break;
+  }
+
+  // Final check for any remaining overlays
   try {
-    const adCloseActions = await stagehand.observe(
-      `Find and click the close button (X, ✕, Close, or similar) on any ads, popups, or modal dialogs that are blocking the page content.`,
-      { timeout: 3000 }
+    const remainingPopups = await stagehand.observe(
+      `Check if there are any remaining popups, modals, or overlays blocking the page. Look for any elements that might be covering the main content.`,
+      { timeout: 1500 }
     );
 
-    if (adCloseActions.length > 0) {
-      console.log("   ✓ Closing ad popup...");
-      await stagehand.act(adCloseActions[0]);
+    if (remainingPopups.length > 0) {
+      console.log("   ✓ Closing remaining overlay...");
+      await stagehand.act(remainingPopups[0]);
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   } catch {
-    // No ads found, continue
+    // No remaining popups
   }
 }
 
