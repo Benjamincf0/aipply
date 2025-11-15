@@ -1,6 +1,6 @@
 import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
-import { JobSchema } from "../types.js";
+import { JobSchema, JobSearchResponseSchema } from "../types.js";
 import { convertToURLGoogleSearch } from "../utils/utils.js";
 
 async function findCareerPage(
@@ -74,10 +74,8 @@ async function getJobsFromJobBoard(
 
     // 3. Extract the data from those cards
     const jobData = await stagehand.extract(
-      "Extract the job title, company name, and location from the first 3 job listing cards/containers on this page",
-      z.object({
-        jobs: z.array(JobSchema),
-      })
+      "Extract the job title, company name, and location from the first 5 job listing cards/containers on this page",
+      JobSearchResponseSchema
     );
     console.log("\n\n\n\n\n\n\nJob data:");
     console.log(JSON.stringify(jobData.jobs, null, 2));

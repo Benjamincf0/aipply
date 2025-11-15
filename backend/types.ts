@@ -21,10 +21,11 @@ export const SearchJobSchema = z.object({
 export type SearchJobInput = z.infer<typeof SearchJobSchema>;
 
 export const JobSearchResponseSchema = z.object({
-  results: z.array(JobSchema),
+  jobs: z.array(JobSchema),
 });
 
 export type JobSearchResponse = z.infer<typeof JobSearchResponseSchema>;
+
 export const WorkExperienceSchema = z.object({
   company: z.string(),
   role: z.string(),

@@ -17,7 +17,7 @@ router.post(
 
     try {
       const jobs = await performSearch();
-      const responseValidation = JobSearchResponseSchema.parse({ results: jobs });
+      const responseValidation = JobSearchResponseSchema.parse(jobs);
       return res.status(200).json(responseValidation);
     } catch (error) {
       console.error("Search route error", error);
