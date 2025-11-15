@@ -2,6 +2,7 @@ import "dotenv/config";
 import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
 import { JobSchema } from "./types.js";
+import { convertToURLGoogleSearch } from "./utils/utils.js";
 
 let BROWSERBASE_PROJECT_ID: string;
 let BROWSERBASE_API_KEY: string;
@@ -43,7 +44,15 @@ const JOB_BOARDS = [
   "https://angel.co/jobs",
 ];
 
+async function findCareerPage(company: string) {
+  const url = `https://www.google.com/search?q=${company}+career+page`;
+  const page = await stagehand.context.newPage();
+  await page.goto(url, { waitUntil: "networkidle" });
+  return page;
+}
+
 async function getOneJob(
+  jobBoard: string,
   jobBoardURL: string,
   stagehand: Stagehand,
   page: Page
@@ -79,16 +88,37 @@ async function getOneJob(
     }
 
     const applyURL = page.url();
+    const isIndeed = applyURL.includes("indeed.com");
+    const isIndeedLogin =
+      isIndeed &&
+      (applyURL.includes("/login") ||
+        applyURL.includes("/auth") ||
+        applyURL.includes("/interstitial"));
 
-    console.log("\n\n\n\n\nApply URL: ", applyURL);
+    const isLoginPage =
+      applyURL.includes("/login") ||
+      applyURL.includes("/signin") ||
+      applyURL.includes("/auth") ||
+      applyURL.includes("/apply");
 
-    job.applyUrl = applyURL;
+    if (isIndeed) {
+      if (isIndeedLogin) {
+        console.log("On Indeed login page - need to handle authentication");
+        // Handle Indeed login or extract apply URL differently
+      } else {
+        console.log("On Indeed apply flow");
+      }
+    } else if (isLoginPage) {
+      console.log("On a generic login page why???");
+    } else {
+      console.log("On company's website - likely the actual application page");
+      job.applyUrl = applyURL;
+    }
 
     await page.goBack({ waitUntil: "networkidle" });
-
     return job;
   } catch (error) {
-    console.error("Error extracting job:", error);
+    console.error("Error getting one job:", error);
     throw error;
   }
 }
@@ -226,7 +256,8 @@ async function main() {
 
     const page = stagehand.context.pages()[0];
 
-    const url = "https://wellfound.com/role/software-engineer";
+    const url =
+      "https://ca.indeed.com/jobs?q=software&l=Canada&sc=0kf%3Aattr%28VDTG7%29%3B&from=searchOnDesktopSerp&cf-turnstile-response=0.jJkCaq4LJ5ztCbxHrL_bf29njqxnn1cM1Iy9rt1r0YqA0U0j3Wlb0ay9tUSQwLZyaTsug040eQQdJhqe-7dFQAmOjmHBenGm3THS-KiUjlnZeDyk64ib96n3j0Bha2Bd-SSStwAnAhyhb2S5kIRsou5tP3xZw1xfq7IGv2pt0Rj2Qin9qAXQGrKEyIULhlscHdLGhyNGNb8ZHWBDfT7Zz4glnWeohsOS-BsDvMqo-u9cjb3q18M7ncZgMnrjUSGz4Aak6TzQSy1f5rl3unSYE6kbO8a8u9NxTvcPfPHRA2LChsxfL5oEKM9x0H2bdpb5N8irVL0gdg8_BaXxEl5C7kFMGOdupSxylFTcvMdnLiO6n4tQmVf-bFtyftvAszXw_bxqdzwdyKRcEAw6WHcWBz_eGDjEKLGQVb7rJxjzGn-x029Nzl2lkn8AJtICEZLnFn0jhOG8b-4s1oAVuv2K4xI9Zj3hXB8a_jIpmW66KZS90kMN73NQY9oHeMFcSVyN4Mod0M47Dj2zpffpbNvM4z07MCOCj36-WJyGn36oO5ImMKjoah7wPfJroAN9TZ2gAeYcPumoFStitJhE58yql7p-tzLGTCgDz7Dzct9akDhGTXtkULGZsZIP_e0OZFMU3ZOmpMFrnG1Re5paz7j2yz-SlrV8Aqmcl_m-WnCYt-Q0_f0799_ZCelbecKSZVRg6AUknClFKHRR3tMDYLXYo4zZdkxRemJ9vS1tyqN3xU-As9k-KJHqLWiEYJn-eAE-qpC_8dLGyA_YGcXPkiTB98MLzLtv0WbptpS7KM8RoG-J7pGOwFmpyqlD6ZFCOtk5i0wKZLjFvTPtDsCt1QnRuCuIEuSrWmDfzFAoY71icR_sfPwI2dunz4-lldDHTE1LUjKY47gSW8bZBOAYniwW6_txkFABYrqSlRatbPCSarhJtH94h2gf-VJiSdn-sm-q.ZehbZpPgE7bqFbo2nRfR-A.b3956a71a9ba12ecf83c7b3fa57c8335fd127669da55eb5703bfd6fa52163bfb&vjk=76a942e318581cd4&advn=1606445599330783";
 
     const job = await getOneJob(url, stagehand, page);
     console.log(JSON.stringify(job, null, 2));
