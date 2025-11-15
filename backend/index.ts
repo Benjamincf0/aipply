@@ -56,14 +56,58 @@ async function getJobPostings(jobBoardURL: string, stagehand: Stagehand) {
       })
     );
 
-    for (const job of jobs.jobs) {
-      console.log(`Job: ${job.title}`);
-      console.log(`Company: ${job.company}`);
-      console.log(`Location: ${job.location}`);
-      console.log(`Description: ${job.description}`);
-      console.log(`Apply URL: ${job.applyUrl}`);
-      console.log("--------------------------------");
+    const relevantJobs = jobs.jobs.filter((job) => {
+      const titleLower = job.title.toLowerCase();
+      const descLower = (job.description || "").toLowerCase();
+      const combinedText = titleLower + " " + descLower;
+
+      // Check if it's an intern position
+      const isIntern = INTERN_KEYWORDS.some((keyword) =>
+        combinedText.includes(keyword)
+      );
+
+      // Check if it's a relevant tech role
+      const isRelevantRole = RELEVANT_KEYWORDS.some((keyword) =>
+        combinedText.includes(keyword)
+      );
+
+      return isIntern && isRelevantRole;
+    });
+
+    const jobsWithLinks = [];
+
+    for (const job of relevantJobs) {
+      if (job.applyUrl) {
+        try {
+          const [applyButton] = await stagehand.observe(
+            `Find the apply button or link for the job titled "${job.title}" at ${job.company}. Look for buttons or links with text like "Apply", "Apply Now", "Easy Apply", "Quick Apply", or similar.`
+          );
+
+          if (applyButton) {
+            let applyUrl = null;
+
+            if (applyButton.selector) {
+              // await stagehand.act(applyButton.selector);
+              applyUrl = await stagehand.extract(
+                `Extract the URL from the apply button or link for the job titled "${job.title}" at ${job.company}.`
+              );
+            }
+
+            jobsWithLinks.push({
+              ...job,
+              applyUrl: applyUrl || "Found but URL extraction failed",
+              applyButtonSelector: applyButton.selector,
+            });
+
+            console.log(
+              `✓ Found apply link for: ${job.title} at ${job.company}`
+            );
+          }
+        } catch (error) {}
+      }
     }
+    await stagehand.close();
+    return jobsWithLinks;
   } catch (error) {
     console.error("Error initializing Stagehand:", error);
     throw error;
