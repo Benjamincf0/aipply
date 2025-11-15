@@ -12,6 +12,9 @@
   },
   "devDependencies": {
     "tsx": "^4.19.2",
-    "typescript": "^5.0.0"
-  }
+    "typescript": "^5.0.0",
+    "@types/bun": "latest"
+  },
+  "module": "index.ts",
+  "private": true
 }
