@@ -67,13 +67,20 @@ async function getOneJob(
         `Find the apply button or link for the job titled "${job.title}" at ${job.company}. Look for buttons or links with text like "Apply", "Apply Now", "Easy Apply", "Quick Apply", or similar.`
       );
     }
-    console.log("Found apply button, navigating to apply page");
+    console.log(
+      "\n\n-=-=- Found apply button, navigating to apply page -=-=-=- \n\n"
+    );
 
-    await page.waitForLoadState("networkidle");
+    try {
+      await page.waitForLoadState("networkidle", 3000);
+    } catch (e) {
+      // If it times out, it's likely a modal, so just wait a bit for it to appear
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
 
     const applyURL = page.url();
 
-    console.log("Apply URL:", applyURL);
+    console.log("\n\n\n\n\nApply URL: ", applyURL);
 
     job.applyUrl = applyURL;
 
