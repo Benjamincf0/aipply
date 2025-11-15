@@ -13,83 +13,293 @@ async function findSpecificJobOnCareerPage(
   console.log(`\nSearching for job: "${job.title}" at ${job.company}`);
 
   if (!job.applyUrl) {
-    console.warn(`⚠️ No career page URL provided for ${job.title}`);
+    console.warn(`No career page URL provided for ${job.title}`);
     return false;
   }
 
   try {
-    // Navigate to the career page
     await page.goto(job.applyUrl, { waitUntil: "networkidle" });
+    new Promise((resolve) => setTimeout(resolve, 1500));
 
-    while (currentPage < MAX_PAGINATION_PAGES) {
-      currentPage++;
-      console.log(`   Scanning page ${currentPage}/${MAX_PAGINATION_PAGES}...`);
+    // 1. Handle popups
+    await handlePopups(stagehand, page);
 
-      // Look for the specific job on the current page
-      const jobListingActions = await stagehand.observe(
-        `Find and click on the job listing for the position "${job.title}" ${
-          job.description
-            ? `with description containing "${job.description.substring(
-                0,
-                100
-              )}"`
-            : ""
-        }. Look for job cards, job titles, or job links that match this position.`
+    // 2. Analyze the page structure
+    const pageStructure = await analyzeCareersPageStructure(stagehand);
+
+    // Look for the specific job on the career page
+    let found = false;
+
+    if (pageStructure === "job-board") {
+      found = await searchUsingFilters(job, stagehand, page);
+    } else if (pageStructure === "link-to-listings") {
+      found = await navigateToListingsPage(job, stagehand, page);
+    } else {
+      found = await searchDirectListings(
+        job,
+        stagehand,
+        page,
+        MAX_PAGINATION_PAGES
       );
-
-      if (jobListingActions.length > 0) {
-        console.log(`   ✓ Found job listing on page ${currentPage}`);
-        // Click on the job listing to open details
-        await stagehand.act(jobListingActions[0]);
-        try {
-          await page.waitForLoadState("networkidle", 10000);
-        } catch {
-          console.warn(`   ⚠️ Timeout waiting for job details, continuing...`);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
-        console.log(`   ✓ Opened job details page`);
-        return true;
-      }
-
-      // If not found, try to find pagination button
-      if (currentPage < MAX_PAGINATION_PAGES) {
-        console.log(
-          `   Job not found on page ${currentPage}, checking for next page...`
-        );
-
-        const paginationActions = await stagehand.observe(
-          `Find and click the "Next" button or pagination button to go to the next page of job listings. Look for buttons with text like "Next", "Next Page", "→", or page numbers.`
-        );
-
-        if (paginationActions.length > 0) {
-          console.log(`   → Moving to next page...`);
-          await stagehand.act(paginationActions[0]);
-          // Wait for the page to load
-          try {
-            await page.waitForLoadState("networkidle", 10000);
-          } catch {
-            console.warn(`   ⚠️ Timeout waiting for pagination, continuing...`);
-          }
-          // Add a small delay to ensure content is loaded
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        } else {
-          console.log(`   ℹ️ No more pages available`);
-          break;
-        }
-      }
     }
-
-    console.warn(
-      `⚠️ Could not find job "${job.title}" after searching ${currentPage} page(s)`
-    );
-    return false;
+    return found;
   } catch (error) {
     console.error(
-      `❌ Error searching for job "${job.title}":`,
+      `Error searching for job "${job.title}":`,
       (error as Error).message
     );
     return false;
   }
+}
+
+async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
+  console.log("Checking for popups...");
+
+  // Handle cookie consent
+  try {
+    const cookieActions = await stagehand.observe(
+      `Find and click the "Accept All", "Allow All", "Accept All Cookies", or similar button to accept cookies. Look for cookie consent banners at the top or bottom of the page.`,
+      { timeout: 3000 }
+    );
+
+    if (cookieActions.length > 0) {
+      console.log("   ✓ Accepting cookies...");
+      await stagehand.act(cookieActions[0]);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  } catch {
+    // No cookie popup found, continue
+  }
+
+  // Handle ads
+  try {
+    const adCloseActions = await stagehand.observe(
+      `Find and click the close button (X, ✕, Close, or similar) on any ads, popups, or modal dialogs that are blocking the page content.`,
+      { timeout: 3000 }
+    );
+
+    if (adCloseActions.length > 0) {
+      console.log("   ✓ Closing ad popup...");
+      await stagehand.act(adCloseActions[0]);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  } catch {
+    // No ads found, continue
+  }
+}
+
+/**
+ * Analyze the structure of the careers page
+ */
+async function analyzeCareersPageStructure(
+  stagehand: Stagehand
+): Promise<"job-board" | "direct-listings" | "link-to-listings"> {
+  try {
+    // Check if there are search/filter controls
+    const filterActions = await stagehand.observe(
+      `Find job search input fields, filter dropdowns, or search buttons used to filter job listings.`,
+      { timeout: 3000 }
+    );
+
+    if (filterActions.length > 0) {
+      console.log("   ✓ Detected job board with filters");
+      return "job-board";
+    }
+
+    // Check if there are direct job listings
+    const jobListingActions = await stagehand.observe(
+      `Find job listings, job cards, or job titles on this page.`,
+      { timeout: 3000 }
+    );
+
+    if (jobListingActions.length > 0) {
+      console.log("   ✓ Detected direct job listings");
+      return "direct-listings";
+    }
+
+    // Otherwise, look for links to job listings page
+    console.log("   ✓ Detected career page with links to listings");
+    return "link-to-listings";
+  } catch {
+    return "direct-listings"; // Default fallback
+  }
+}
+
+async function searchUsingFilters(
+  job: JobSchema,
+  stagehand: Stagehand,
+  page: Page
+): Promise<boolean> {
+  console.log("   Using job board search strategy...");
+
+  try {
+    // Try to use search input
+    const searchInputActions = await stagehand.observe(
+      `Find the job search input field or search box where you can type a job title to filter results.`
+    );
+
+    if (searchInputActions.length > 0) {
+      console.log(`   ✓ Found search input, entering job title...`);
+      await stagehand.act({
+        description: `fill the job search input field with the job title "${job.title}"`,
+        selector: searchInputActions[0].selector,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Click search button if available
+      const searchButtonActions = await stagehand.observe(
+        `Find and click the search button, submit button, or "Go" button to search for jobs.`
+      );
+
+      if (searchButtonActions.length > 0) {
+        await stagehand.act(searchButtonActions[0]);
+        await page.waitForLoadState("networkidle", 10000);
+      }
+    }
+
+    // Now look for the specific job in filtered results
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const jobListingActions = await stagehand.observe(
+      `Find and click on the job listing for "${job.title}" ${
+        job.description
+          ? `with description containing "${job.description.substring(0, 100)}"`
+          : ""
+      }.`
+    );
+
+    if (jobListingActions.length > 0) {
+      console.log(`   ✓ Found job listing after filtering`);
+      await stagehand.act(jobListingActions[0]);
+      await page.waitForLoadState("networkidle", 10000);
+      return true;
+    }
+
+    console.log(`   ⚠️ Job not found after applying filters`);
+    return false;
+  } catch (error) {
+    console.warn(`   ⚠️ Error using filters: ${(error as Error).message}`);
+    return false;
+  }
+}
+
+/**
+ * Navigate to the actual job listings page
+ */
+async function navigateToListingsPage(
+  job: JobSchema,
+  stagehand: Stagehand,
+  page: Page
+): Promise<boolean> {
+  console.log("   Navigating to job listings page...");
+
+  try {
+    // Look for links like "View Open Positions", "See All Jobs", "Careers", etc.
+    const jobsLinkActions = await stagehand.observe(
+      `Find and click on links or buttons that lead to job listings, such as "View Open Positions", "See All Jobs", "Open Roles", "Job Openings", or similar.`
+    );
+
+    if (jobsLinkActions.length > 0) {
+      console.log(`   ✓ Found link to job listings, navigating...`);
+      await stagehand.act(jobsLinkActions[0]);
+      await page.waitForLoadState("networkidle", 10000);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Handle popups again on the new page
+      await handlePopups(stagehand, page);
+
+      // Now search on this page
+      const pageStructure = await analyzeCareersPageStructure(stagehand);
+
+      if (pageStructure === "job-board") {
+        return await searchUsingFilters(job, stagehand, page);
+      } else {
+        return await searchDirectListings(job, stagehand, page, 5);
+      }
+    }
+
+    console.warn(`   ⚠️ Could not find link to job listings`);
+    return false;
+  } catch (error) {
+    console.warn(
+      `   ⚠️ Error navigating to listings: ${(error as Error).message}`
+    );
+    return false;
+  }
+}
+
+/**
+ * Search through direct job listings with pagination
+ */
+async function searchDirectListings(
+  job: JobSchema,
+  stagehand: Stagehand,
+  page: Page,
+  maxPages: number
+): Promise<boolean> {
+  console.log("   Searching direct job listings...");
+  let currentPage = 0;
+
+  while (currentPage < maxPages) {
+    currentPage++;
+    console.log(`   Scanning page ${currentPage}/${maxPages}...`);
+
+    // Look for the specific job on the current page
+    const jobListingActions = await stagehand.observe(
+      `Find and click on the job listing for the position "${job.title}" ${
+        job.description
+          ? `with description containing "${job.description.substring(0, 100)}"`
+          : ""
+      }. Look for job cards, job titles, or job links that match this position.`
+    );
+
+    if (jobListingActions.length > 0) {
+      console.log(`   ✓ Found job listing on page ${currentPage}`);
+      await stagehand.act(jobListingActions[0]);
+
+      try {
+        await page.waitForLoadState("networkidle", 10000);
+      } catch {
+        console.warn(`   ⚠️ Timeout waiting for job details, continuing...`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+
+      console.log(`   ✓ Opened job details page`);
+      return true;
+    }
+
+    // Try pagination
+    if (currentPage < maxPages) {
+      console.log(
+        `   Job not found on page ${currentPage}, checking for next page...`
+      );
+
+      const paginationActions = await stagehand.observe(
+        `Find and click the "Next" button, "Next Page", arrow (→, ›), or the next page number to navigate to the next page of job listings.`
+      );
+
+      if (paginationActions.length > 0) {
+        console.log(`   → Moving to next page...`);
+        await stagehand.act(paginationActions[0]);
+
+        try {
+          await page.waitForLoadState("networkidle", 10000);
+        } catch {
+          console.warn(`   ⚠️ Timeout waiting for pagination, continuing...`);
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } else {
+        console.log(`   ℹ️ No more pages available`);
+        break;
+      }
+    }
+  }
+
+  console.warn(
+    `   ⚠️ Could not find job "${job.title}" after searching ${currentPage} page(s)`
+  );
+  return false;
 }
 
 async function fillApplicationForm(
