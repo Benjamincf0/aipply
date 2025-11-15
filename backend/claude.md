@@ -18,7 +18,7 @@ import { Stagehand } from "@browserbasehq/stagehand";
 const stagehand = new Stagehand({
   env: "LOCAL", // or "BROWSERBASE"
   verbose: 2, // 0, 1, or 2
-  model: "openai/gpt-4.1-mini", // or any supported model
+  modelName: "openai/gpt-4.1-mini", // or any supported model
 });
 
 await stagehand.init();
@@ -88,9 +88,9 @@ const data = await stagehand.extract(
       z.object({
         price: z.string(),
         address: z.string(),
-      }),
+      })
     ),
-  }),
+  })
 );
 
 console.log(data.listings);
@@ -107,7 +107,7 @@ console.log(result);
 
 // Or destructure directly
 const { extraction } = await stagehand.extract(
-  "extract the sign in button text",
+  "extract the sign in button text"
 );
 console.log(extraction); // "Sign in"
 ```
@@ -120,7 +120,7 @@ Extract data from a specific element using a selector:
 const reason = await stagehand.extract(
   "extract the reason why script injection fails",
   z.string(),
-  { selector: "/html/body/div[2]/div[3]/iframe/html/body/p[2]" },
+  { selector: "/html/body/div[2]/div[3]/iframe/html/body/p[2]" }
 );
 ```
 
@@ -133,7 +133,7 @@ const { links } = await stagehand.extract(
   "extract all navigation links",
   z.object({
     links: z.array(z.string().url()),
-  }),
+  })
 );
 ```
 
@@ -143,7 +143,7 @@ const { links } = await stagehand.extract(
 // Extract from a specific page (when you need to target a page that isn't currently active)
 const data = await stagehand.extract(
   "extract the placeholder text on the name field",
-  { page: page2 },
+  { page: page2 }
 );
 ```
 
