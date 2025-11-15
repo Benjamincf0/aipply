@@ -44,141 +44,6 @@ const JOB_BOARDS = [
   "https://angel.co/jobs",
 ];
 
-const APPLICANT_PROFILE: ApplicantProfile = {
-  // Basic Information
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+1-555-123-4567",
-  location: "San Francisco, CA, USA",
-  city: "San Francisco",
-  state: "CA",
-  country: "United States",
-  postalCode: "94102",
-
-  // Links
-  linkedin: "https://www.linkedin.com/in/johndoe",
-  github: "https://github.com/johndoe",
-  portfolio: "https://johndoe.dev",
-  website: "https://johndoe.com",
-
-  // Work Experience
-  workExperience: [
-    {
-      company: "Tech Corp",
-      role: "Software Engineer Intern",
-      duration: "6 months",
-      startDate: "June 2024",
-      endDate: "December 2024",
-      responsibilities: [
-        "Developed and maintained RESTful APIs using Node.js and Express",
-        "Collaborated with cross-functional teams to deliver features",
-        "Implemented automated testing with Jest and increased code coverage by 30%",
-        "Optimized database queries resulting in 40% performance improvement",
-      ],
-    },
-    {
-      company: "Startup Inc",
-      role: "Frontend Developer Intern",
-      duration: "4 months",
-      startDate: "January 2024",
-      endDate: "May 2024",
-      responsibilities: [
-        "Built responsive web applications using React and TypeScript",
-        "Integrated third-party APIs and managed state with Redux",
-        "Worked closely with designers to implement pixel-perfect UI components",
-      ],
-    },
-  ],
-
-  // Education
-  education: [
-    {
-      institution: "University of California, Berkeley",
-      degree: "Bachelor of Science",
-      field: "Computer Science",
-      graduationDate: "May 2025",
-      gpa: "3.8",
-    },
-  ],
-
-  // Skills
-  technicalSkills: [
-    "JavaScript",
-    "TypeScript",
-    "Python",
-    "React",
-    "Node.js",
-    "Express",
-    "MongoDB",
-    "PostgreSQL",
-    "Git",
-    "Docker",
-    "AWS",
-    "REST APIs",
-    "GraphQL",
-    "Jest",
-    "HTML/CSS",
-  ],
-  softSkills: [
-    "Team collaboration",
-    "Problem-solving",
-    "Communication",
-    "Time management",
-    "Adaptability",
-  ],
-
-  // Projects
-  projects: [
-    {
-      name: "E-commerce Platform",
-      description:
-        "Built a full-stack e-commerce platform with user authentication, product catalog, shopping cart, and payment integration using Stripe API",
-      technologies: ["React", "Node.js", "MongoDB", "Express", "Stripe"],
-      link: "https://github.com/johndoe/ecommerce-platform",
-      startDate: "March 2024",
-      endDate: "May 2024",
-    },
-    {
-      name: "Real-time Chat Application",
-      description:
-        "Developed a real-time chat application with WebSocket support, user presence indicators, and message history persistence",
-      technologies: ["React", "Socket.io", "Node.js", "Redis", "PostgreSQL"],
-      link: "https://github.com/johndoe/chat-app",
-      startDate: "January 2024",
-      endDate: "February 2024",
-    },
-    {
-      name: "Task Management Tool",
-      description:
-        "Created a collaborative task management tool with drag-and-drop interface, real-time updates, and team collaboration features",
-      technologies: [
-        "TypeScript",
-        "Next.js",
-        "Prisma",
-        "PostgreSQL",
-        "TailwindCSS",
-      ],
-      link: "https://github.com/johndoe/task-manager",
-      startDate: "October 2023",
-      endDate: "December 2023",
-    },
-  ],
-
-  // Additional Information
-  coverLetter:
-    "I am a passionate and driven computer science student with a strong foundation in full-stack development. Through my internships and personal projects, I have gained extensive experience in building scalable web applications and working with modern technologies. I am eager to contribute to innovative projects and continue growing as a software engineer. I am particularly interested in roles that allow me to work on challenging problems and collaborate with talented teams.",
-  availability: "Immediately available",
-  workAuthorization: "Authorized to work in the United States",
-  requiresSponsorship: false,
-  willingToRelocate: true,
-  expectedSalary: "$80,000 - $100,000",
-  noticePeriod: "2 weeks",
-
-  // Resume
-  resumePath: "./resume.pdf",
-};
-
 async function findCareerPage(
   company: string,
   stagehand: Stagehand,
@@ -337,70 +202,72 @@ async function fillApplicationForm(
   try {
     // Prepare applicant information as a context string for the agent
     const applicantContext = `
-APPLICANT INFORMATION:
-Name: ${applicantProfile.firstName} ${applicantProfile.lastName}
-Email: ${applicantProfile.email}
-Phone: ${applicantProfile.phone}
-Location: ${applicantProfile.location}
-City: ${applicantProfile.city}
-State: ${applicantProfile.state || "N/A"}
-Country: ${applicantProfile.country}
-Postal Code: ${applicantProfile.postalCode || "N/A"}
+      APPLICANT INFORMATION:
+      Name: ${applicantProfile.firstName} ${applicantProfile.lastName}
+      Email: ${applicantProfile.email}
+      Phone: ${applicantProfile.phone}
+      Location: ${applicantProfile.location}
+      City: ${applicantProfile.city}
+      State: ${applicantProfile.state || "N/A"}
+      Country: ${applicantProfile.country}
+      Postal Code: ${applicantProfile.postalCode || "N/A"}
 
-LinkedIn: ${applicantProfile.linkedin || "N/A"}
-GitHub: ${applicantProfile.github || "N/A"}
-Portfolio: ${applicantProfile.portfolio || "N/A"}
-Website: ${applicantProfile.website || "N/A"}
+      LinkedIn: ${applicantProfile.linkedin || "N/A"}
+      GitHub: ${applicantProfile.github || "N/A"}
+      Portfolio: ${applicantProfile.portfolio || "N/A"}
+      Website: ${applicantProfile.website || "N/A"}
 
-WORK EXPERIENCE:
-${applicantProfile.workExperience
-  .map(
-    (exp, idx) => `
-${idx + 1}. ${exp.role} at ${exp.company}
-   Duration: ${exp.startDate} - ${exp.endDate || "Present"}
-   Responsibilities: ${exp.responsibilities.join("; ")}`
-  )
-  .join("\n")}
+      WORK EXPERIENCE:
+      ${applicantProfile.workExperience
+        .map(
+          (exp, idx) => `
+      ${idx + 1}. ${exp.role} at ${exp.company}
+        Duration: ${exp.startDate} - ${exp.endDate || "Present"}
+        Responsibilities: ${exp.responsibilities.join("; ")}`
+        )
+        .join("\n")}
 
-EDUCATION:
-${applicantProfile.education
-  .map(
-    (edu, idx) => `
-${idx + 1}. ${edu.degree} in ${edu.field}
-   Institution: ${edu.institution}
-   Graduation: ${edu.graduationDate}
-   GPA: ${edu.gpa || "N/A"}`
-  )
-  .join("\n")}
+      EDUCATION:
+      ${applicantProfile.education
+        .map(
+          (edu, idx) => `
+      ${idx + 1}. ${edu.degree} in ${edu.field}
+        Institution: ${edu.institution}
+        Graduation: ${edu.graduationDate}
+        GPA: ${edu.gpa || "N/A"}`
+        )
+        .join("\n")}
 
-TECHNICAL SKILLS:
-${applicantProfile.technicalSkills.join(", ")}
+      TECHNICAL SKILLS:
+      ${applicantProfile.technicalSkills.join(", ")}
 
-SOFT SKILLS:
-${applicantProfile.softSkills.join(", ")}
+      SOFT SKILLS:
+      ${applicantProfile.softSkills.join(", ")}
 
-PROJECTS:
-${applicantProfile.projects
-  .map(
-    (proj, idx) => `
-${idx + 1}. ${proj.name}
-   Description: ${proj.description}
-   Technologies: ${proj.technologies.join(", ")}
-   Link: ${proj.link || "N/A"}
-   Period: ${proj.startDate || "N/A"} - ${proj.endDate || "N/A"}`
-  )
-  .join("\n")}
+      PROJECTS:
+      ${applicantProfile.projects
+        .map(
+          (proj, idx) => `
+      ${idx + 1}. ${proj.name}
+        Description: ${proj.description}
+        Technologies: ${proj.technologies.join(", ")}
+        Link: ${proj.link || "N/A"}
+        Period: ${proj.startDate || "N/A"} - ${proj.endDate || "N/A"}`
+        )
+        .join("\n")}
 
-ADDITIONAL INFORMATION:
-Cover Letter: ${applicantProfile.coverLetter || "N/A"}
-Availability: ${applicantProfile.availability || "N/A"}
-Work Authorization: ${applicantProfile.workAuthorization || "N/A"}
-Requires Sponsorship: ${applicantProfile.requiresSponsorship ? "Yes" : "No"}
-Willing to Relocate: ${applicantProfile.willingToRelocate ? "Yes" : "No"}
-Expected Salary: ${applicantProfile.expectedSalary || "N/A"}
-Notice Period: ${applicantProfile.noticePeriod || "N/A"}
-Resume Path: ${applicantProfile.resumePath}
-`;
+      ADDITIONAL INFORMATION:
+      Cover Letter: ${applicantProfile.coverLetter || "N/A"}
+      Availability: ${applicantProfile.availability || "N/A"}
+      Work Authorization: ${applicantProfile.workAuthorization || "N/A"}
+      Requires Sponsorship: ${
+        applicantProfile.requiresSponsorship ? "Yes" : "No"
+      }
+      Willing to Relocate: ${applicantProfile.willingToRelocate ? "Yes" : "No"}
+      Expected Salary: ${applicantProfile.expectedSalary || "N/A"}
+      Notice Period: ${applicantProfile.noticePeriod || "N/A"}
+      Resume Path: ${applicantProfile.resumePath}
+    `;
 
     console.log(`   🤖 Using AI agent to fill out application form...`);
 
@@ -408,18 +275,18 @@ Resume Path: ${applicantProfile.resumePath}
     const agent = stagehand.agent({
       systemPrompt: `You are an AI assistant helping to fill out job application forms. You have access to the applicant's complete information.
 
-${applicantContext}
+      ${applicantContext}
 
-Your task is to:
-1. Fill out ALL form fields on the page using the applicant information provided above
-2. Handle any type of field: text inputs, dropdowns, checkboxes, textareas, etc.
-3. For file upload fields (resume/CV), note them but skip them (they will be handled separately)
-4. Navigate through multi-step forms by clicking "Next" or "Continue" buttons
-5. IMPORTANT: When you encounter a "Submit" or "Submit Application" button, DO NOT CLICK IT. Instead, report that you've reached the final submission page.
-6. Be intelligent about matching form field labels to the applicant data - use context to determine the best value to fill
-7. For unexpected questions, use your best judgment based on the applicant's profile and the context of the question
+      Your task is to:
+      1. Fill out ALL form fields on the page using the applicant information provided above
+      2. Handle any type of field: text inputs, dropdowns, checkboxes, textareas, etc.
+      3. For file upload fields (resume/CV), note them but skip them (they will be handled separately)
+      4. Navigate through multi-step forms by clicking "Next" or "Continue" buttons
+      5. IMPORTANT: When you encounter a "Submit" or "Submit Application" button, DO NOT CLICK IT. Instead, report that you've reached the final submission page.
+      6. Be intelligent about matching form field labels to the applicant data - use context to determine the best value to fill
+      7. For unexpected questions, use your best judgment based on the applicant's profile and the context of the question
 
-Remember: Fill out everything EXCEPT the final submit button. Stop when you reach the submit button and report success.`,
+      Remember: Fill out everything EXCEPT the final submit button. Stop when you reach the submit button and report success.`,
     });
 
     // Execute the agent to fill the form
