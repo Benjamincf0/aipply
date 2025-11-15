@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
-import { Job, JobSchema } from "./types.js";
+import { JobSchema } from "./types.js";
 
 let BROWSERBASE_PROJECT_ID: string;
 let BROWSERBASE_API_KEY: string;
@@ -43,8 +43,51 @@ const JOB_BOARDS = [
   "https://angel.co/jobs",
 ];
 
+async function getOneJob(
+  jobBoardURL: string,
+  stagehand: Stagehand,
+  page: Page
+) {
+  let job: JobSchema | null = null;
+  try {
+    await page.goto(jobBoardURL, { waitUntil: "networkidle" });
+    job = await stagehand.extract(
+      `Extract the job title, company name, location, and description from the first job on the page.`,
+      JobSchema
+    );
+
+    const action = await stagehand.observe(
+      `Find the apply button or link for the job titled "${job.title}" at ${job.company}. Look for buttons or links with text like "Apply", "Apply Now", "Easy Apply", "Quick Apply", or similar.`
+    );
+
+    if (action.length > 0) {
+      await stagehand.act(action[0]);
+    } else {
+      await stagehand.act(
+        `Find the apply button or link for the job titled "${job.title}" at ${job.company}. Look for buttons or links with text like "Apply", "Apply Now", "Easy Apply", "Quick Apply", or similar.`
+      );
+    }
+    console.log("Found apply button, navigating to apply page");
+
+    await page.waitForLoadState("networkidle");
+
+    const applyURL = page.url();
+
+    console.log("Apply URL:", applyURL);
+
+    job.applyUrl = applyURL;
+
+    await page.goBack({ waitUntil: "networkidle" });
+
+    return job;
+  } catch (error) {
+    console.error("Error extracting job:", error);
+    throw error;
+  }
+}
+
 async function getJobPostings(jobBoardURL: string, page: Page) {
-  const jobs: Job[] = [];
+  const jobs: JobSchema[] = [];
   try {
     await page.goto(jobBoardURL, { waitUntil: "networkidle" });
 
@@ -175,25 +218,11 @@ async function main() {
     );
 
     const page = stagehand.context.pages()[0];
-    await page.goto("https://www.goccc.ca/events/");
 
-    console.log("Page loaded successfully");
+    const url = "https://wellfound.com/role/software-engineer";
 
-    const actions = await stagehand.observe(
-      "find the details button of the first event on the page"
-    );
-    console.log(`Observed actions:\n`, JSON.stringify(actions, null, 2));
-
-    if (actions.length > 0) {
-      await stagehand.act(actions[0]);
-    } else {
-      await stagehand.act("details button of the first event on the page");
-    }
-
-    const eventDetails = await stagehand.extract(
-      "Extract the event name, date, time, location, and description from the page."
-    );
-    console.log(`Event details:\n`, JSON.stringify(eventDetails, null, 2));
+    const job = await getOneJob(url, stagehand, page);
+    console.log(JSON.stringify(job, null, 2));
   } catch (error) {
     console.error("Detailed error:", error);
     throw error;
