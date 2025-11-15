@@ -18,14 +18,13 @@ try {
   );
 }
 
-export default async function main() {
+
+async function main() {
   const stagehand = new Stagehand({
-    env: "BROWSERBASE",
-    apiKey: BROWSERBASE_API_KEY,
-    projectId: BROWSERBASE_PROJECT_ID,
-    verbose: 2,
+    env: "LOCAL",
     model: "google/gemini-2.0-flash-lite",
-});
+  });
+
 
   try {
     await stagehand.init();
