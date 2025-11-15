@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Archive, BriefcaseBusiness, Home, Settings } from "lucide-react";
+import { Archive, BriefcaseBusiness, Home, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -22,7 +22,7 @@ export default function SideBar() {
     { href: "/", icon: Home },
     { href: "/jobs", icon: Archive },
     { href: "/apply", icon: BriefcaseBusiness },
-    { href: "/config", icon: Settings },
+    { href: "/profiles", icon: User },
   ];
 
   return (

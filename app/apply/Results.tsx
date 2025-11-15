@@ -38,7 +38,10 @@ export default function Results({ data, formRef }: ResultsProps) {
   return (
     <>
       <div className="flex w-full flex-1 overflow-x-hidden overflow-y-auto p-1">
-        <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(300px,1fr))] grid-rows-[auto_1fr_auto] gap-2">
+        <div
+          className="grid w-full grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-2"
+          style={{ gridAutoRows: "min-content" }}
+        >
           {data.map((job) => (
             <JobCard key={job.id} job={job} />
           ))}

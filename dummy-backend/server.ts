@@ -17,7 +17,7 @@ const server = Bun.serve({
       POST: async (req) => {
         const formdata = await req.json();
         console.log(formdata);
-        const placeholder: JobSchema[] = Array(1000)
+        const placeholder: JobSchema[] = Array(5)
           .fill(0)
           .map(() => ({
             id: crypto.randomUUID(),
@@ -34,7 +34,7 @@ const server = Bun.serve({
 
     "/api/application/list": {
       GET: async () => {
-        const placeholder: ApplicationStatusSchema[] = Array(1000)
+        const placeholder: ApplicationStatusSchema[] = Array(10)
           .fill(0)
           .map(() => ({
             job: {

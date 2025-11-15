@@ -14,6 +14,8 @@ import { ApplicationStatusSchema } from "@/backend/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import LiveView from "./LiveView";
+import { useState } from "react";
 
 export default function JobsPage() {
   const { data, isPending } = useQuery({
@@ -36,6 +38,10 @@ export default function JobsPage() {
     },
   });
 
+  const [selectedApplication, setSelectedApplication] = useState<
+    ApplicationStatusSchema | undefined
+  >();
+
   if (isPending || !data) {
     return (
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-2">
@@ -57,43 +63,61 @@ export default function JobsPage() {
   }
 
   return (
-    <Table className="w-full flex-1 p-1">
-      <TableHeader>
-        <TableRow className="w-full">
-          <TableHead>Status</TableHead>
-          <TableHead>Job</TableHead>
-          <TableHead>Start</TableHead>
-          <TableHead className="text-right">Completed</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((app) => (
-          <TableRow key={app.job.id} className="w-full">
-            <TableCell>
-              <div className="flex w-fit items-center justify-center gap-2">
-                <div
-                  className={cn(
-                    "h-2 w-2 rounded-full",
-                    app.status === "running" && "bg-yellow-500",
-                    app.status === "pending" && "bg-gray-500",
-                    app.status === "completed" && "bg-green-500",
-                    app.status === "failed" && "bg-red-500",
-                  )}
-                />
-                {app.status}
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="font-bold">{app.job.title}</div>
-              <div>{app.job.company}</div>
-            </TableCell>
-            <TableCell>{app.startDate}</TableCell>
-            <TableCell className="text-right">
-              {app.completedDate ?? "-"}
-            </TableCell>
+    <div className="flex w-full flex-1 gap-4">
+      <Table className="w-full p-1">
+        <TableHeader>
+          <TableRow className="w-full">
+            <TableHead>Status</TableHead>
+            <TableHead>Job</TableHead>
+            {selectedApplication === undefined && (
+              <>
+                <TableHead>Start</TableHead>
+                <TableHead className="text-right">Completed</TableHead>
+              </>
+            )}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {data.map((app) => (
+            <TableRow
+              key={app.job.id}
+              onClick={() => setSelectedApplication(app)}
+              className={cn(
+                "w-full cursor-pointer",
+                selectedApplication === app && "bg-muted hover:bg-muted",
+              )}
+            >
+              <TableCell>
+                <div className="flex w-fit items-center justify-center gap-2">
+                  <div
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      app.status === "running" && "bg-yellow-500",
+                      app.status === "pending" && "bg-gray-500",
+                      app.status === "completed" && "bg-green-500",
+                      app.status === "failed" && "bg-red-500",
+                    )}
+                  />
+                  {app.status}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="font-bold">{app.job.title}</div>
+                <div>{app.job.company}</div>
+              </TableCell>
+              {selectedApplication === undefined && (
+                <>
+                  <TableCell>{app.startDate}</TableCell>
+                  <TableCell className="text-right">
+                    {app.completedDate ?? "-"}
+                  </TableCell>
+                </>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <LiveView selectedApplication={selectedApplication} />
+    </div>
   );
 }
