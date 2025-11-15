@@ -3,41 +3,45 @@ import { Stagehand } from "@browserbasehq/stagehand";
 
 async function main() {
   const stagehand = new Stagehand({
-    env: "BROWSERBASE",
+    env: "LOCAL",
+    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    model: "google/gemini-2.0-flash-exp",
   });
 
-  await stagehand.init();
+  try {
+    await stagehand.init();
 
-  console.log(`Stagehand Session Started`);
-  console.log(
-    `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`
-  );
+    console.log(`Stagehand Session Started`);
+    console.log(
+      `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`
+    );
 
-  const page = stagehand.context.pages()[0];
+    const page = stagehand.context.pages()[0];
+    await page.goto("https://www.goccc.ca/events/");
 
-  await page.goto("https://stagehand.dev");
+    console.log("Page loaded successfully");
 
-  const extractResult = await stagehand.extract(
-    "Extract the value proposition from the page."
-  );
-  console.log(`Extract result:\n`, extractResult);
+    const actions = await stagehand.observe(
+      "find the details button of the first event on the page"
+    );
+    console.log(`Observed actions:\n`, JSON.stringify(actions, null, 2));
 
-  const actResult = await stagehand.act("Click the 'Evals' button.");
-  console.log(`Act result:\n`, actResult);
+    if (actions.length > 0) {
+      await stagehand.act(actions[0]);
+    } else {
+      await stagehand.act("details button of the first event on the page");
+    }
 
-  const observeResult = await stagehand.observe("What can I click on this page?");
-  console.log(`Observe result:\n`, observeResult);
-
-  const agent = stagehand.agent({
-    systemPrompt: "You're a helpful assistant that can control a web browser.",
-  });
-
-  const agentResult = await agent.execute(
-    "What is the most accurate model to use in Stagehand?"
-  );
-  console.log(`Agent result:\n`, agentResult);
-
-  await stagehand.close();
+    const eventDetails = await stagehand.extract(
+      "Extract the event name, date, time, location, and description from the page."
+    );
+    console.log(`Event details:\n`, JSON.stringify(eventDetails, null, 2));
+  } catch (error) {
+    console.error("Detailed error:", error);
+    throw error;
+  } finally {
+    await stagehand.close();
+  }
 }
 
 main().catch((err) => {
