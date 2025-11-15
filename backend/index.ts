@@ -1,6 +1,7 @@
 import "dotenv/config";
-import { Stagehand } from "@browserbasehq/stagehand";
+import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
+import { Job, JobSchema } from "./types.js";
 
 let BROWSERBASE_PROJECT_ID: string;
 let BROWSERBASE_API_KEY: string;
@@ -15,28 +16,35 @@ try {
   );
 }
 
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  apiKey: GOOGLE_GENERATIVE_AI_API_KEY,
+  model: "google/gemini-2.0-flash-exp",
+});
+
 const RELEVANT_KEYWORDS = [
   "software engineer",
+  "software engineering",
+  "swe",
+  "software developer",
   "software development",
   "devops",
   "full-stack",
   "full stack",
   "backend",
   "back-end",
-  "software developer",
 ];
 
 const INTERN_KEYWORDS = ["intern", "internship", "co-op", "coop"];
 
-const JobSchema = z.object({
-  title: z.string(),
-  company: z.string(),
-  location: z.string().optional(),
-  applyUrl: z.string().optional(),
-  description: z.string().optional(),
-});
+const JOB_BOARDS = [
+  "https://www.linkedin.com/jobs",
+  "https://www.indeed.com",
+  "https://angel.co/jobs",
+];
 
-async function getJobPostings(jobBoardURL: string, stagehand: Stagehand) {
+async function getJobPostings(jobBoardURL: string, page: Page) {
+  const jobs: Job[] = [];
   try {
     stagehand.init();
     const page = stagehand.context.pages()[0];
