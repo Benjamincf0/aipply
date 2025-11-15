@@ -9,9 +9,9 @@
     "@browserbasehq/stagehand": "latest",
     "bullmq": "^5.63.2",
     "dotenv": "^16.4.7",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
     "express": "^5.1.0",
-    "uuid": "^13.0.0",
+    "uuid": "^13.0.0"
 
   },
   "devDependencies": {
