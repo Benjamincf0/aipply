@@ -4,6 +4,7 @@ import "./globals.css";
 import SideBar from "./SideBar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import SideBarTrigger from "./SideBarTrigger";
+import ClientProvider from "./ClientProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,13 +31,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen overflow-hidden antialiased`}
       >
-        <SidebarProvider className="h-full">
-          <SideBar />
-          <main className="flex h-full w-full flex-col gap-4 p-4">
-            <SideBarTrigger />
-            {children}
-          </main>
-        </SidebarProvider>
+        <ClientProvider>
+          <SidebarProvider className="h-full">
+            <SideBar />
+            <main className="flex h-full w-full flex-col gap-4 p-4">
+              <SideBarTrigger />
+              {children}
+            </main>
+          </SidebarProvider>
+        </ClientProvider>
       </body>
     </html>
   );

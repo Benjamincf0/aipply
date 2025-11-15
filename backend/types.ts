@@ -10,4 +10,15 @@ export const JobSchema = z.object({
   description: z.string().optional(),
 });
 
+export const ApplicationStatusSchema = z.object({
+  job: JobSchema,
+  sessionId: z.string(),
+  coverLetter: z.string(),
+  resume: z.string(),
+  startDate: z.string(),
+  completedDate: z.string().optional(),
+  status: z.enum(["pending", "running", "failed", "completed"]),
+});
+
 export type JobSchema = z.infer<typeof JobSchema>;
+export type ApplicationStatusSchema = z.infer<typeof ApplicationStatusSchema>;

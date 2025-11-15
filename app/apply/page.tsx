@@ -10,7 +10,7 @@ export default function ApplyPage() {
   const formRef = useRef<HTMLFormElement>(null!);
 
   return (
-    <div className="flex w-full basis-full flex-col gap-2 overflow-hidden">
+    <div className="flex w-full flex-1 flex-col gap-2 overflow-hidden p-1">
       <ApplyForm setData={setData} formRef={formRef} />
       <Results data={data} formRef={formRef} />
     </div>

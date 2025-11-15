@@ -33,9 +33,13 @@ export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
       setData(undefined);
     }
     {
+      const formData = new FormData(formRef.current);
+      console.log("formData:", formData);
+      const json = JSON.stringify(formData);
+
       const res = await fetch("http://localhost:8080/api/job/search", {
         method: "POST",
-        body: new FormData(formRef.current),
+        body: json,
       });
 
       if (!res.ok) {

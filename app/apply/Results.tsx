@@ -37,7 +37,7 @@ export default function Results({ data, formRef }: ResultsProps) {
 
   return (
     <>
-      <div className="flex w-full flex-1 overflow-x-hidden overflow-y-auto">
+      <div className="flex w-full flex-1 overflow-x-hidden overflow-y-auto p-1">
         <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(300px,1fr))] grid-rows-[auto_1fr_auto] gap-2">
           {data.map((job) => (
             <JobCard key={job.id} job={job} />
@@ -57,7 +57,7 @@ function JobCard({ job }: { job: JobSchema }) {
     <Card className="h-fit">
       <CardHeader>
         <CardTitle>{job.title}</CardTitle>
-        <CardDescription>{job.location}</CardDescription>
+        <CardDescription>{job.company}</CardDescription>
         <CardAction>
           <Button
             variant="ghost"
