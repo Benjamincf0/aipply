@@ -1,65 +1,17 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState } from "react";
+import ApplyForm from "./ApplyForm";
+import Results from "./Results";
+import { Job } from "@/backend/types";
 
 export default function ApplyPage() {
+  const [data, setData] = useState<Job[]>();
+
   return (
     <div className="w-full basis-full">
-      <form className="flex w-full gap-2">
-        <Field>
-          <FieldLabel htmlFor="search">Search</FieldLabel>
-          <Input
-            required
-            placeholder="Job title, company name, or keyword"
-            id="search"
-            name="search"
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="location">Location</FieldLabel>
-          <Input
-            required
-            placeholder="City, state, or country"
-            id="location"
-            name="location"
-          />
-        </Field>
-        <Field className="flex-1">
-          <FieldLabel htmlFor="type">Type</FieldLabel>
-          <Select defaultValue="">
-            <SelectTrigger id="type" name="type">
-              <SelectValue placeholder="type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="internship">Internship</SelectItem>
-              <SelectItem value="full-time">Full-time</SelectItem>
-              <SelectItem value="part-time">Part-time</SelectItem>
-              <SelectItem value="contract">Contract</SelectItem>
-              <SelectItem value="freelance">Freelance</SelectItem>
-              <SelectItem value="volunteer">Volunteer</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field className="flex-1">
-          <FieldLabel htmlFor="start">Start date</FieldLabel>
-          <Input
-            required
-            placeholder="YYYY-MM-DD"
-            id="start"
-            name="start"
-            type="date"
-          />
-        </Field>
-      </form>
+      <ApplyForm />
+      <Results />
     </div>
   );
 }

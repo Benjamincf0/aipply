@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const Job = z.object({
+export const JobSchema = z.object({
+  id: z.string().optional(),
   title: z.string(),
   company: z.string(),
   source: z.string(),
@@ -9,4 +10,4 @@ export const Job = z.object({
   description: z.string().optional(),
 });
 
-export type Job = z.infer<typeof Job>;
+export type JobSchema = z.infer<typeof JobSchema>;

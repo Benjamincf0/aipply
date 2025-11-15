@@ -46,11 +46,7 @@ const JOB_BOARDS = [
 async function getJobPostings(jobBoardURL: string, page: Page) {
   const jobs: Job[] = [];
   try {
-    stagehand.init();
-    const page = stagehand.context.pages()[0];
-    await page.goto(jobBoardURL);
-
-    await page.waitForLoadState("networkidle");
+    await page.goto(jobBoardURL, { waitUntil: "networkidle" });
 
     const jobs = await stagehand.extract(
       `Extract all job listings on this page. For each job, get:
@@ -122,6 +118,45 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
   } finally {
     await stagehand.close();
   }
+}
+
+async function findApplicationButton(
+  page: Page,
+  job: JobListing
+): Promise<string | null> {
+  console.log(`Finding application button for: ${job.title} at ${job.company}`);
+
+  if (!job.applicationUrl) return null;
+
+  try {
+    await page.goto(job.applicationUrl, { waitUntil: "networkidle" });
+
+    // Use Stagehand to intelligently find application button
+    const result = await stagehand.extract({
+      instruction: `Find the main "Apply" or "Application" button/link for this job.
+        Return the absolute URL if it's a link, or indicate if it's a form button.
+        Ignore "Save Job" or "Share" buttons.`,
+      schema: {
+        type: "object",
+        properties: {
+          actionUrl: { type: "string" },
+          buttonText: { type: "string" },
+          actionType: { type: "string", enum: ["url", "form", "none"] },
+        },
+      },
+    });
+
+    if (result.actionType === "url" && result.actionUrl) {
+      return result.actionUrl;
+    } else if (result.actionType === "form") {
+      console.log(`Form-based application found for ${job.title}`);
+      return job.applicationUrl; // Return the page URL to handle form filling separately
+    }
+  } catch (error) {
+    console.error(`Error finding application button for ${job.title}:`, error);
+  }
+
+  return null;
 }
 
 async function main() {
