@@ -7,7 +7,7 @@ export default function SideBarTrigger() {
   const path = usePathname();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-2">
       <SidebarTrigger />
       <span className="text-primary/80">|</span>
       <span className="ml-1.5">

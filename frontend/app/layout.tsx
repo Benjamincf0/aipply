@@ -30,9 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} h-screen w-screen overflow-hidden antialiased`}
       >
-        <SidebarProvider>
+        <SidebarProvider className="h-full">
           <SideBar />
-          <main className="h-full w-full p-2">
+          <main className="flex h-full w-full flex-col gap-4 p-4">
             <SideBarTrigger />
             {children}
           </main>
