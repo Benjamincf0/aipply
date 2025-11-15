@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import "dotenv/config";
 import { Stagehand } from "@browserbasehq/stagehand";
 
+
 export default async (req: Request, res: Response, next: NextFunction) => {
     if (!global.stagehand) {
         const stagehand = new Stagehand({

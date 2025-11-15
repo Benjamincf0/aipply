@@ -1,17 +1,29 @@
-import express, { Request, Response } from 'express';
-import { applyController } from '../controllers/applyController.js';
-import { z } from 'zod';
+import express, { Request, Response } from "express";
+import { SearchJobSchema, JobSearchResponseSchema } from "../types.js";
+import ensureStagehandSession from "../middleware/sessionMiddleware.js";
+import performSearch from "../agent/index.js";
+
 const router = express.Router();
 
-const SearchJobSchema = z.object({
-  query: z.string().min(1),
-  location: z.string().optional(),
-  type: z.enum(['full-time', 'part-time', 'contract']).optional(),
-});
+router.post(
+  "/",
+  ensureStagehandSession,
+  async (req: Request, res: Response) => {
+    const parseResult = SearchJobSchema.safeParse(req.body);
 
-router.route('/').post((req: Request, res: Response) => {
-    const data = req.body;
-  
-  res.send('Search endpoint is under construction');
-});
+    if (!parseResult.success) {
+      return res.status(400).json({ errors: parseResult.error.flatten() });
+    }
+
+    try {
+      const jobs = await performSearch();
+      const responseValidation = JobSearchResponseSchema.parse({ results: jobs });
+      return res.status(200).json(responseValidation);
+    } catch (error) {
+      console.error("Search route error", error);
+      return res.status(500).json({ message: "Failed to perform search" });
+    }
+  }
+);
+
 export default router;
