@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
-import { Job, JobSchema } from "./types.js";
+import { JobSchema } from "./types";
 
 let BROWSERBASE_PROJECT_ID: string;
 let BROWSERBASE_API_KEY: string;
@@ -12,7 +12,7 @@ try {
   GOOGLE_GENERATIVE_AI_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY!;
 } catch (e) {
   throw new Error(
-    "BROWSERBASE_PROJECT_ID and BROWSERBASE_API_KEY must be set in environment variables to run this example. Please check your .env file."
+    "BROWSERBASE_PROJECT_ID and BROWSERBASE_API_KEY must be set in environment variables to run this example. Please check your .env file.",
   );
 }
 
@@ -57,7 +57,7 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
         Focus on finding intern or internship positions related to software engineering, development, devops, full-stack, or backend roles.`,
       z.object({
         jobs: z.array(JobSchema),
-      })
+      }),
     );
 
     const relevantJobs = jobs.jobs.filter((job) => {
@@ -67,12 +67,12 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
 
       // Check if it's an intern position
       const isIntern = INTERN_KEYWORDS.some((keyword) =>
-        combinedText.includes(keyword)
+        combinedText.includes(keyword),
       );
 
       // Check if it's a relevant tech role
       const isRelevantRole = RELEVANT_KEYWORDS.some((keyword) =>
-        combinedText.includes(keyword)
+        combinedText.includes(keyword),
       );
 
       return isIntern && isRelevantRole;
@@ -84,7 +84,7 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
       if (job.applyUrl) {
         try {
           const [applyButton] = await stagehand.observe(
-            `Find the apply button or link for the job titled "${job.title}" at ${job.company}. Look for buttons or links with text like "Apply", "Apply Now", "Easy Apply", "Quick Apply", or similar.`
+            `Find the apply button or link for the job titled "${job.title}" at ${job.company}. Look for buttons or links with text like "Apply", "Apply Now", "Easy Apply", "Quick Apply", or similar.`,
           );
 
           if (applyButton) {
@@ -93,7 +93,7 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
             if (applyButton.selector) {
               // await stagehand.act(applyButton.selector);
               applyUrl = await stagehand.extract(
-                `Extract the URL from the apply button or link for the job titled "${job.title}" at ${job.company}.`
+                `Extract the URL from the apply button or link for the job titled "${job.title}" at ${job.company}.`,
               );
             }
 
@@ -104,7 +104,7 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
             });
 
             console.log(
-              `✓ Found apply link for: ${job.title} at ${job.company}`
+              `✓ Found apply link for: ${job.title} at ${job.company}`,
             );
           }
         } catch (error) {}
@@ -122,7 +122,7 @@ async function getJobPostings(jobBoardURL: string, page: Page) {
 
 async function findApplicationButton(
   page: Page,
-  job: JobListing
+  job: JobListing,
 ): Promise<string | null> {
   console.log(`Finding application button for: ${job.title} at ${job.company}`);
 
@@ -171,7 +171,7 @@ async function main() {
 
     console.log(`Stagehand Session Started`);
     console.log(
-      `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`
+      `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`,
     );
 
     const page = stagehand.context.pages()[0];
@@ -180,7 +180,7 @@ async function main() {
     console.log("Page loaded successfully");
 
     const actions = await stagehand.observe(
-      "find the details button of the first event on the page"
+      "find the details button of the first event on the page",
     );
     console.log(`Observed actions:\n`, JSON.stringify(actions, null, 2));
 
@@ -191,7 +191,7 @@ async function main() {
     }
 
     const eventDetails = await stagehand.extract(
-      "Extract the event name, date, time, location, and description from the page."
+      "Extract the event name, date, time, location, and description from the page.",
     );
     console.log(`Event details:\n`, JSON.stringify(eventDetails, null, 2));
   } catch (error) {
