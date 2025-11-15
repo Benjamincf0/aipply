@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -10,10 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Archive, BriefcaseBusiness, Home, Settings } from "lucide-react";
@@ -27,37 +22,42 @@ export default function SideBar() {
     { href: "/", icon: Home },
     { href: "/jobs", icon: Archive },
     { href: "/apply", icon: BriefcaseBusiness },
-    { href: "/settings", icon: Settings },
+    { href: "/config", icon: Settings },
   ];
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {routes.map((route) => (
-                  <SidebarMenuItem key={route.href}>
-                    <SidebarMenuButton asChild>
-                      <Link
-                        href={route.href}
-                        className="flex items-center gap-2"
-                      >
-                        <route.icon />
+    <Sidebar collapsible="icon">
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {routes.map((route) => (
+                <SidebarMenuItem key={route.href}>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      path === route.href
+                        ? "hover:bg-sidebar-primary hover:text-sidebar-primary-foreground bg-sidebar-primary text-sidebar-primary-foreground"
+                        : "",
+                    )}
+                  >
+                    <Link href={route.href} className="flex items-center gap-2">
+                      <route.icon />
+                      <span>
                         {route.href.slice(1) === ""
                           ? "Home"
-                          : route.href.slice(1)}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-    </SidebarProvider>
+                          : route.href.slice(1).slice(0, 1).toUpperCase() +
+                            route.href.slice(1).slice(1)}
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }
