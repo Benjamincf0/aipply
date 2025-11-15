@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx index.ts"
+    "start": "tsx agent/index.ts"
   },
   "dependencies": {
     "@browserbasehq/stagehand": "latest",
