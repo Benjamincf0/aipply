@@ -1,3 +1,4 @@
+import { JobSchema } from "@/backend/types";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -7,10 +8,24 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { useCallback } from "react";
 
-export default function ApplyForm() {
+type ApplyFormProps = {
+  setData: (data: JobSchema[]) => void;
+  formRef: React.RefObject<HTMLFormElement>;
+};
+
+export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      console.log("submit");
+    },
+    [],
+  );
+
   return (
-    <form className="flex w-full gap-2">
+    <form className="flex w-full gap-2" onSubmit={handleSubmit} ref={formRef}>
       <Field>
         <FieldLabel htmlFor="search">Search</FieldLabel>
         <Input
