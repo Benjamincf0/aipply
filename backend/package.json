@@ -3,14 +3,20 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsx index.ts"
+    "start": "tsx agent/index.ts"
   },
   "dependencies": {
     "@browserbasehq/stagehand": "latest",
+    "bullmq": "^5.63.2",
     "dotenv": "^16.4.7",
-    "zod": "^4.1.12"
+    "express": "^5.1.0",
+    "uuid": "^13.0.0",
+    "zod": "3.25.67"
   },
   "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/uuid": "^10.0.0",
+    "nodemon": "^3.1.11",
     "tsx": "^4.19.2",
     "typescript": "^5.0.0"
   }
