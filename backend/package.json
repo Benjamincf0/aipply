@@ -1,15 +1,15 @@
 {
   "name": "my-stagehand-app",
   "type": "module",
-  "scripts": {
-    "build": "tsc",
-    "start": "tsx index.ts"
-  },
+  "scripts": {},
   "dependencies": {
     "@browserbasehq/stagehand": "latest",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.5",
+    "nodemon": "^3.1.11",
     "tsx": "^4.19.2",
     "typescript": "^5.0.0"
   }
