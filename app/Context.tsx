@@ -8,7 +8,7 @@ export type Profile = {
   lastName: string;
   email: string;
   phone: string;
-  resumeUrl: string;
+  resume: File;
   country?: string;
   city?: string;
   state?: string;
@@ -25,11 +25,15 @@ export type AppState = {
 type Action =
   | {
       type: "setSelectedProfileId";
-      payload: number;
+      id: number;
     }
   | {
       type: "setProfiles";
-      payload: Profile[];
+      profiles: Profile[];
+    }
+  | {
+      type: "addProfile";
+      profile: Omit<Profile, "id">;
     };
 
 export const Context = createContext<{
@@ -48,13 +52,21 @@ function reducer(state: AppState, action: Action) {
     case "setSelectedProfileId":
       return {
         ...state,
-        selectedProfileId: action.payload,
+        selectedProfileId: action.id,
       };
     case "setProfiles":
       return {
         ...state,
-        profiles: action.payload,
+        profiles: action.profiles,
       };
+    case "addProfile": {
+      const id = state.profiles.length + 1;
+
+      return {
+        ...state,
+        profiles: [...state.profiles, { ...action.profile, id }],
+      };
+    }
     default:
       throw new Error("Unknown action type");
   }
