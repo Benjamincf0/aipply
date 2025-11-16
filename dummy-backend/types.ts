@@ -46,7 +46,7 @@ export const JobResultSchema = z.object({
 export const ApplicationStatusSchema = z.object({
   job: JobResultSchema,
   sessionId: z.string(),
-  startDate: z.string(),
+  startDate: z.string().optional(),
   completedDate: z.string().optional(),
   status: z.enum(["pending", "running", "failed", "completed"]),
   profileId: z.number(),

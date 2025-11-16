@@ -66,7 +66,7 @@ export default function JobsPage() {
               </TableCell>
               {selectedApplication === undefined && (
                 <>
-                  <TableCell>{app.startDate}</TableCell>
+                  <TableCell>{app.startDate ?? "-"}</TableCell>
                   <TableCell className="text-right">
                     {app.completedDate ?? "-"}
                   </TableCell>
@@ -76,7 +76,7 @@ export default function JobsPage() {
           ))}
         </TableBody>
       </Table>
-      <LiveView selectedApplication={selectedApplication} />
+      <LiveView selectedApplicationId={selectedApplication?.job.job_id} />
     </div>
   );
 }

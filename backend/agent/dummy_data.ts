@@ -55,6 +55,7 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
       field: "Computer Science",
       graduationDate: "May 2025",
       gpa: "3.8",
+      startDate: "September 2021",
     },
   ],
 

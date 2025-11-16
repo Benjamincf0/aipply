@@ -286,7 +286,6 @@ const server = Bun.serve({
                   job: t,
                   profileId: links.data.profileId,
                   sessionId: "asdf",
-                  startDate: new Date().toISOString(),
                   status: "pending",
                 }) as const,
             ),
@@ -298,8 +297,28 @@ const server = Bun.serve({
           };
           ws.send(JSON.stringify(msg));
 
-          setTimeout(() => {
+          setTimeout(async () => {
             for (const job of applications) {
+              job.status = "running";
+              job.startDate = new Date().toISOString();
+              let m: Action = {
+                type: "setApplication",
+                application: job,
+              };
+              ws.send(JSON.stringify(m));
+
+              await new Promise((resolve) =>
+                setTimeout(resolve, Math.random() * 3000),
+              );
+
+              job.status = "completed";
+              job.completedDate = new Date().toISOString();
+
+              m = {
+                type: "setApplication",
+                application: job,
+              };
+              ws.send(JSON.stringify(m));
             }
           }, 1000);
         }

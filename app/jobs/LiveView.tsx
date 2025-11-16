@@ -1,10 +1,20 @@
-import { ApplicationStatusSchema } from "@/dummy-backend/types";
+import { use } from "react";
+import { Context } from "../Context";
 
 type Props = {
-  selectedApplication: ApplicationStatusSchema | undefined;
+  selectedApplicationId: string | undefined;
 };
 
-export default function LiveView({ selectedApplication }: Props) {
+export default function LiveView({ selectedApplicationId }: Props) {
+  const { state } = use(Context);
+  if (!selectedApplicationId) {
+    return null;
+  }
+
+  const selectedApplication = state.applications.find(
+    (a) => a.job.job_id === selectedApplicationId,
+  );
+
   if (!selectedApplication) {
     return null;
   }
@@ -21,7 +31,7 @@ export default function LiveView({ selectedApplication }: Props) {
           <div>Start date: {selectedApplication.startDate}</div>
           <div>Completed date: {selectedApplication.completedDate ?? "-"}</div>
           <div>Status: {selectedApplication.status}</div>
-          <div>Session ID: {selectedApplication.sessionId}</div>
+          {/* <div>Session ID: {selectedApplication.sessionId}</div> */}
         </div>
         <div>Hello world</div>
       </div>

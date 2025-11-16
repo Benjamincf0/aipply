@@ -50,6 +50,10 @@ export type Action =
   | {
       type: "setWebsocket";
       websocket: WebSocket;
+    }
+  | {
+      type: "setApplication";
+      application: ApplicationStatusSchema;
     };
 
 export const Context = createContext<{
@@ -98,6 +102,16 @@ function reducer(state: AppState, action: Action) {
       return {
         ...state,
         applications: action.applications,
+      };
+    }
+    case "setApplication": {
+      return {
+        ...state,
+        applications: state.applications.map((a) =>
+          a.job.job_id === action.application.job.job_id
+            ? action.application
+            : a,
+        ),
       };
     }
     case "setWebsocket": {
