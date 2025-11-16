@@ -11,6 +11,7 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
   state: "CA",
   country: "United States",
   postalCode: "94102",
+  streetAddress: "123 Main St",
 
   // Links
   linkedin: "https://www.linkedin.com/in/johndoe",
@@ -131,6 +132,80 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
   expectedSalary: "$80,000 - $100,000",
   noticePeriod: "2 weeks",
 
+  legallyAllowedToWork: true,
+  legallyAllowedToWorkInCanada: true,
+  legallyAllowedToWorkInUnitedStates: true,
+
+  eligibleToWork: true,
+  eligibleForInternship: true,
+  eligibleForCoop: true,
+
+  interestedTermLength: [
+    "4 months",
+    "6 months",
+    "8 months",
+    "12 months",
+    "18 months",
+    "24 months",
+  ],
   // Resume
   resumePath: "./resume.pdf",
 };
+
+export const DUMMY_APPLICANT_CONTEXT = `
+APPLICANT INFORMATION:
+Name: ${APPLICANT_PROFILE.firstName} ${APPLICANT_PROFILE.lastName}
+Email: ${APPLICANT_PROFILE.email}
+Phone: ${APPLICANT_PROFILE.phone}
+Location: ${APPLICANT_PROFILE.location}
+City: ${APPLICANT_PROFILE.city}
+State: ${APPLICANT_PROFILE.state || "N/A"}
+Country: ${APPLICANT_PROFILE.country}
+Postal Code: ${APPLICANT_PROFILE.postalCode || "N/A"}
+
+Links:
+LinkedIn: ${APPLICANT_PROFILE.linkedin || "N/A"}
+GitHub: ${APPLICANT_PROFILE.github || "N/A"}
+Portfolio: ${APPLICANT_PROFILE.portfolio || "N/A"}
+Website: ${APPLICANT_PROFILE.website || "N/A"}
+
+Work Experience:
+${APPLICANT_PROFILE.workExperience
+  .map(
+    (exp, idx) => `${idx + 1}. ${exp.role} at ${exp.company}
+   Duration: ${exp.startDate} - ${exp.endDate || "Present"}
+   Responsibilities: ${exp.responsibilities.join("; ")}`,
+  )
+  .join("\n")}
+
+Education:
+${APPLICANT_PROFILE.education
+  .map(
+    (edu, idx) => `${idx + 1}. ${edu.degree} in ${edu.field}
+   Institution: ${edu.institution}
+   Graduation: ${edu.graduationDate}
+   GPA: ${edu.gpa || "N/A"}`,
+  )
+  .join("\n")}
+
+Technical Skills: ${APPLICANT_PROFILE.technicalSkills.join(", ")}
+Soft Skills: ${APPLICANT_PROFILE.softSkills.join(", ")}
+
+Projects:
+${APPLICANT_PROFILE.projects
+  .map(
+    (proj, idx) => `${idx + 1}. ${proj.name}
+   Description: ${proj.description}
+   Technologies: ${proj.technologies.join(", ")}`,
+  )
+  .join("\n")}
+
+Additional Info:
+Availability: ${APPLICANT_PROFILE.availability || "Immediately"}
+Work Authorization: ${APPLICANT_PROFILE.workAuthorization || "N/A"}
+Requires Sponsorship: ${APPLICANT_PROFILE.requiresSponsorship ? "Yes" : "No"}
+Willing to Relocate: ${APPLICANT_PROFILE.willingToRelocate ? "Yes" : "No"}
+Expected Salary: ${APPLICANT_PROFILE.expectedSalary || "N/A"}
+Notice Period: ${APPLICANT_PROFILE.noticePeriod || "N/A"}
+
+Cover Letter: ${APPLICANT_PROFILE.coverLetter || "N/A"}`;

@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { Stagehand } from "@browserbasehq/stagehand";
 import { APPLICANT_PROFILE } from "./dummy_data.js";
-import { fillApplicationForm } from "./fill_application.js";
+import { fillApplicationForm } from "./fill_application_cursor.js";
+import { handlePopups } from "./apply_job.js";
 
 let BROWSERBASE_PROJECT_ID: string;
 let BROWSERBASE_API_KEY: string;
@@ -37,6 +38,7 @@ async function main() {
       await page.goto(url, { waitUntil: "networkidle" }).catch((e) => {
         console.error(`Failed to navigate to ${url}:`, e);
       });
+      await handlePopups(stagehand, page);
       const fillResult = await fillApplicationForm(
         APPLICANT_PROFILE,
         stagehand,

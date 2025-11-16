@@ -73,6 +73,7 @@ export const ApplicantProfileSchema = z.object({
   state: z.string().optional(),
   country: z.string(),
   postalCode: z.string().optional(),
+  streetAddress: z.string().optional(),
 
   // Links
   linkedin: z.string().optional(),
@@ -102,6 +103,28 @@ export const ApplicantProfileSchema = z.object({
   expectedSalary: z.string().optional(),
   noticePeriod: z.string().optional(),
 
+  legallyAllowedToWork: z.boolean().optional(),
+  legallyAllowedToWorkInCanada: z.boolean().optional(),
+  legallyAllowedToWorkInUnitedStates: z.boolean().optional(),
+  legallyAllowedToWorkInUnitedKingdom: z.boolean().optional(),
+  legallyAllowedToWorkInAustralia: z.boolean().optional(),
+  legallyAllowedToWorkInNewZealand: z.boolean().optional(),
+  legallyAllowedToWorkInSouthAfrica: z.boolean().optional(),
+  legallyAllowedToWorkInIndia: z.boolean().optional(),
+  legallyAllowedToWorkInChina: z.boolean().optional(),
+
+  eligibleToWork: z.boolean().optional(),
+  eligibleForInternship: z.boolean().optional(),
+  eligibleForCoop: z.boolean().optional(),
+  eligibleForFullTime: z.boolean().optional(),
+  eligibleForPartTime: z.boolean().optional(),
+  eligibleForContract: z.boolean().optional(),
+  eligibleForFreelance: z.boolean().optional(),
+  eligibleForRemote: z.boolean().optional(),
+  eligibleForOnsite: z.boolean().optional(),
+  eligibleForHybrid: z.boolean().optional(),
+
+  interestedTermLength: z.array(z.string()).optional(),
   // Resume
   resumePath: z.string(),
 });
@@ -111,4 +134,3 @@ export type WorkExperience = z.infer<typeof WorkExperienceSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type ApplicantProfile = z.infer<typeof ApplicantProfileSchema>;
-
