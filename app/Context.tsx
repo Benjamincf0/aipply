@@ -60,7 +60,7 @@ function reducer(state: AppState, action: Action) {
         profiles: action.profiles,
       };
     case "addProfile": {
-      const id = state.profiles.length + 1;
+      const id = (state.profiles.at(-1)?.id || 0) + 1;
 
       return {
         ...state,

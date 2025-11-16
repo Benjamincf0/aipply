@@ -19,6 +19,7 @@ export default function NewProfile() {
   const [showMore, setShowMore] = useState(false);
 
   const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
     const profile: Omit<Profile, "id"> = {
@@ -36,10 +37,13 @@ export default function NewProfile() {
     };
 
     dispatch({ type: "addProfile", profile });
+
+    e.currentTarget.reset();
+    file.current = null;
   }, []);
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center gap-2 overflow-x-hidden overflow-y-auto">
+    <div className="flex w-full flex-1 flex-col items-start gap-2 overflow-x-hidden overflow-y-auto p-2">
       <form className="flex w-xl flex-col gap-4" onSubmit={handleSubmit}>
         <FieldGroup>
           <FieldSet>
@@ -95,21 +99,19 @@ export default function NewProfile() {
                 type="email"
               />
             </Field>
+            <Field>
+              <FieldLabel htmlFor="phone">Phone (+# ### ###-####)*</FieldLabel>
+              <Input
+                id="phone"
+                name="phone"
+                required
+                type="tel"
+                placeholder="+1 (555) 555-5555"
+                pattern="^\+[0-9]{1,2} [0-9]{3} [0-9]{3}-[0-9]{4}$"
+              />
+            </Field>
             {showMore ? (
               <>
-                <Field>
-                  <FieldLabel htmlFor="phone">
-                    Phone (+# ### ###-####)
-                  </FieldLabel>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    required
-                    type="tel"
-                    placeholder="+1 (555) 555-5555"
-                    pattern="^\+[0-9]{2} [0-9]{3} [0-9]{3}-[0-9]{4}$"
-                  />
-                </Field>
                 <div className="flex w-full flex-col gap-2">
                   <Field>
                     <FieldLabel htmlFor="country">Country</FieldLabel>
