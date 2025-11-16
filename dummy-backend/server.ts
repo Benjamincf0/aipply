@@ -1,5 +1,5 @@
 import z from "zod";
-import { ApplicationStatusSchema, JobSchema } from "../backend/types";
+import { ApplicationStatusSchema } from "../backend/types";
 import crypto from "crypto";
 import { JobResultSchema, JobSearchReq } from "./types";
 
@@ -61,8 +61,6 @@ const server = Bun.serve({
             CORS_HEADERS,
           );
         }
-
-        // console.log(parsedResults.data);
 
         return Response.json(parsedResults.data, CORS_HEADERS);
       },

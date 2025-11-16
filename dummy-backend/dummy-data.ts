@@ -5,7 +5,7 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
   firstName: "John",
   lastName: "Doe",
   email: "jehusladon@gmail.com",
-  phone: "+1-555-123-4567",
+  phone: "+15141234567",
   location: "San Francisco, CA, USA",
   city: "San Francisco",
   state: "CA",

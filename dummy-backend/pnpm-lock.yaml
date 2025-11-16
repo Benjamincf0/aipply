@@ -8,15 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/huggingface':
+        specifier: ^0.0.9
+        version: 0.0.9(zod@3.25.76)
       '@browserbasehq/stagehand':
         specifier: ^3.0.2
         version: 3.0.2(@cfworker/json-schema@4.1.1)(@opentelemetry/api@1.9.0)(deepmerge@4.3.1)(dotenv@16.6.1)(zod@3.25.76)
       openai:
         specifier: ^6.9.0
         version: 6.9.0(ws@8.18.3)(zod@3.25.76)
-      playright:
-        specifier: ^0.0.22
-        version: 0.0.22
       zod:
         specifier: '3'
         version: 3.25.76
@@ -68,6 +68,12 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/huggingface@0.0.9':
+    resolution: {integrity: sha512-bUhluHC4/xOwTk+JLBFC+YftT9tiScJrfMx+KPO0tx/10NcKVb6TsAQDUCRLIKpMzdHZp5eQi2SV8d12qUYFxw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
 
   '@ai-sdk/mistral@2.0.24':
     resolution: {integrity: sha512-X9IW0vUCHIq//L1ukirB3j54Hrde5zt40m0uG+ouEE9xz62BPT7Ue94qWL6U02u42vnaoGUE7VxrncwPVMjQjQ==}
@@ -1030,9 +1036,6 @@ packages:
     resolution: {integrity: sha512-ueGLflrrnvwB3xuo/uGob5pd5FN7l0MsLf0Z87o/UQmRtwjvfylfc9MurIxRAWywCYTgrvpXBcqjV4OfCYGCIQ==}
     engines: {node: '>=16.20.0'}
 
-  playright@0.0.22:
-    resolution: {integrity: sha512-CAnov0flTUoiXrypVkbtDmY/K0iKCrW/RGlUO9a8jIah7u7NkTteLFt3GKHkIWOAM7rp9N751MgBGg9IkhdiYw==}
-
   playwright-core@1.56.1:
     resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
     engines: {node: '>=18'}
@@ -1268,11 +1271,6 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
-  typescript@4.9.5:
-    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
-
   unbzip2-stream@1.4.3:
     resolution: {integrity: sha512-mlExGW4w71ebDJviH16lQLtZS32VKqsSfk80GCfUlwT/4/hNRFsoscrF/c++9xinkMzECL1uL9DDwXqFWkruPg==}
 
@@ -1419,6 +1417,13 @@ snapshots:
       zod: 3.25.76
     optional: true
 
+  '@ai-sdk/huggingface@0.0.9(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 1.0.27(zod@3.25.76)
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
+      zod: 3.25.76
+
   '@ai-sdk/mistral@2.0.24(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
@@ -1431,7 +1436,6 @@ snapshots:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.17(zod@3.25.76)
       zod: 3.25.76
-    optional: true
 
   '@ai-sdk/openai@2.0.67(zod@3.25.76)':
     dependencies:
@@ -2544,11 +2548,6 @@ snapshots:
 
   pkce-challenge@5.0.0: {}
 
-  playright@0.0.22:
-    dependencies:
-      playwright: 1.56.1
-      typescript: 4.9.5
-
   playwright-core@1.56.1: {}
 
   playwright@1.56.1:
@@ -2846,8 +2845,6 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.1
-
-  typescript@4.9.5: {}
 
   unbzip2-stream@1.4.3:
     dependencies:

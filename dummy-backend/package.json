@@ -8,9 +8,9 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@ai-sdk/huggingface": "^0.0.9",
     "@browserbasehq/stagehand": "^3.0.2",
     "openai": "^6.9.0",
-    "playright": "^0.0.22",
     "zod": "3"
   }
 }
