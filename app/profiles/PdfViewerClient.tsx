@@ -1,4 +1,3 @@
-// src/components/PdfViewerClient.tsx
 "use client";
 
 import { useState } from "react";
@@ -75,26 +74,25 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
       </div>
 
       {/* PDF Display */}
-      <div className="text-editor-text mb-5 h-full flex-1 overflow-auto">
-        <div className="flex min-h-full justify-center overflow-auto p-8">
-          <Document
-            file={pdfUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={<div className="spinner">Loading...</div>}
-            className="rounded-sm bg-(--editor-bg) shadow-(--shadow-pdf)"
-            scale={zoom / 100}
-          >
-            {Array.from(new Array(numPages), (_, index) => (
-              <Page
-                key={`page_${index + 1}`}
-                pageNumber={index + 1}
-                width={(baseWidth * zoom) / 100}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-              />
-            ))}
-          </Document>
-        </div>
+      <div className="mb-5 max-h-[calc(100vh-200px)] w-full max-w-[595px] flex-1 overflow-auto p-8">
+        <Document
+          file={pdfUrl}
+          onLoadSuccess={onDocumentLoadSuccess}
+          loading={<div className="spinner">Loading...</div>}
+          className="inline-block max-w-full rounded-sm shadow-md"
+        >
+          {Array.from(new Array(numPages), (_, index) => (
+            <Page
+              key={`page_${index + 1}`}
+              pageNumber={index + 1}
+              // width={(baseWidth * zoom) / 100}
+              renderTextLayer={true}
+              renderAnnotationLayer={true}
+              width={baseWidth}
+              scale={zoom / 100}
+            />
+          ))}
+        </Document>
       </div>
     </div>
   );
