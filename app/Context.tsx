@@ -34,6 +34,11 @@ type Action =
   | {
       type: "addProfile";
       profile: Omit<Profile, "id">;
+    }
+  | {
+      type: "updateProfile";
+      profileId: number;
+      profile: Profile;
     };
 
 export const Context = createContext<{
@@ -65,6 +70,15 @@ function reducer(state: AppState, action: Action) {
       return {
         ...state,
         profiles: [...state.profiles, { ...action.profile, id }],
+      };
+    }
+    case "updateProfile": {
+      const updatedProfiles = state.profiles.map((p) =>
+        p.id === action.profileId ? action.profile : p,
+      );
+      return {
+        ...state,
+        profiles: updatedProfiles,
       };
     }
     default:
