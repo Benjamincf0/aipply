@@ -104,11 +104,9 @@ export async function fillApplicationForm(
     if (applyButton.length > 0) {
       console.log("Found apply button, clicking...");
       await stagehand.act(applyButton[0]);
-      await page
-        .waitForLoadState("networkidle", { timeout: 10000 })
-        .catch(() => {
-          console.log("Initial page load timeout (continuing anyway)");
-        });
+      await page.waitForLoadState("networkidle", 10000).catch(() => {
+        console.log("Initial page load timeout (continuing anyway)");
+      });
       // Give the page a moment to settle after clicking apply
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
@@ -116,9 +114,7 @@ export async function fillApplicationForm(
     while (iteration < MAX_ITERATIONS) {
       iteration++;
 
-      await page
-        .waitForLoadState("domcontentloaded", { timeout: 5000 })
-        .catch(() => {});
+      await page.waitForLoadState("domcontentloaded", 5000).catch(() => {});
       const errors = await stagehand.observe(
         "Find any error messages or validation warnings",
       );
@@ -212,11 +208,9 @@ export async function fillApplicationForm(
         if (nextButton.length > 0) {
           console.log("Clicking next button...");
           await stagehand.act(nextButton[0]);
-          await page
-            .waitForLoadState("networkidle", { timeout: 10000 })
-            .catch(() => {
-              console.log("Next page load timeout (continuing anyway)");
-            });
+          await page.waitForLoadState("networkidle", 10000).catch(() => {
+            console.log("Next page load timeout (continuing anyway)");
+          });
           consecutiveFailures = 0;
           consecutiveNoFieldsFound = 0;
           iteration = 0;
@@ -246,9 +240,7 @@ export async function fillApplicationForm(
         console.log(
           `Agent execution result: ${result.success ? "Success" : "Failed"}`,
         );
-        await page
-          .waitForLoadState("networkidle", { timeout: 5000 })
-          .catch(() => {});
+        await page.waitForLoadState("networkidle", 5000).catch(() => {});
         if (result.success === false) {
           consecutiveFailures++;
         }
