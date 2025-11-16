@@ -5,7 +5,7 @@ import { JobSchema, ApplicantProfile } from "../types.js";
 async function findSpecificJobOnCareerPage(
   job: JobSchema,
   stagehand: Stagehand,
-  page: Page
+  page: Page,
 ): Promise<boolean> {
   console.log(`\n🔍 Searching for job: "${job.title}" at ${job.company}`);
 
@@ -87,7 +87,7 @@ IMPORTANT: Only click on the job listing that matches the title "${job.title}". 
         z.object({
           isJobDetailsPage: z.boolean(),
           jobTitle: z.string().optional(),
-        })
+        }),
       );
 
       if (isJobDetailsPage.isJobDetailsPage) {
@@ -126,7 +126,7 @@ IMPORTANT: Only click on the job listing that matches the title "${job.title}". 
         z.object({
           isJobDetailsPage: z.boolean(),
           foundJobTitle: z.boolean(),
-        })
+        }),
       );
 
       if (verifyJobPage.isJobDetailsPage || verifyJobPage.foundJobTitle) {
@@ -146,7 +146,7 @@ IMPORTANT: Only click on the job listing that matches the title "${job.title}". 
           hasMoreOptions: z.boolean(),
           hasPagination: z.boolean(),
           hasSearchFilters: z.boolean(),
-        })
+        }),
       );
 
       if (!hasMoreOptions.hasMoreOptions) {
@@ -157,12 +157,12 @@ IMPORTANT: Only click on the job listing that matches the title "${job.title}". 
 
     if (found) {
       console.log(
-        `   ✅ Successfully found and navigated to job: "${job.title}"`
+        `   ✅ Successfully found and navigated to job: "${job.title}"`,
       );
       return true;
     } else {
       console.warn(
-        `   ⚠️ Could not find job "${job.title}" after ${iteration} iterations`
+        `   ⚠️ Could not find job "${job.title}" after ${iteration} iterations`,
       );
       return false;
     }
@@ -170,25 +170,28 @@ IMPORTANT: Only click on the job listing that matches the title "${job.title}". 
     console.error(
       `   ❌ Error searching for job "${job.title}": ${
         (error as Error).message
-      }`
+      }`,
     );
     return false;
   }
 }
 
-async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
-  console.log("   🔍 Checking for popups and overlays...");
+export async function handlePopups(
+  stagehand: Stagehand,
+  page: Page,
+): Promise<void> {
+  console.log(" Checking for popups and overlays...");
 
   // Handle cookie consent - try multiple times as popups may appear after page load
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const cookieActions = await stagehand.observe(
         `Find and click buttons to accept cookies. Look for buttons with text like "Accept All", "Allow All", "Accept All Cookies", "I Accept", "Accept", "Allow Cookies", or similar. These are usually in banners at the top or bottom of the page.`,
-        { timeout: 2000 }
+        { timeout: 2000 },
       );
 
       if (cookieActions.length > 0) {
-        console.log("   ✓ Accepting cookies...");
+        console.log("Accepting cookies...");
         await stagehand.act(cookieActions[0]);
         await new Promise((resolve) => setTimeout(resolve, 1500));
         // Check again in case another popup appears
@@ -205,7 +208,7 @@ async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
     try {
       const adCloseActions = await stagehand.observe(
         `Find and click the close button (X, ✕, ×, Close, or similar) on any ads, popups, modal dialogs, or overlays that are blocking or covering the page content. Look for close buttons in the top-right corner of popups or banners.`,
-        { timeout: 2000 }
+        { timeout: 2000 },
       );
 
       if (adCloseActions.length > 0) {
@@ -225,7 +228,7 @@ async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
   try {
     const remainingPopups = await stagehand.observe(
       `Check if there are any remaining popups, modals, or overlays blocking the page. Look for any elements that might be covering the main content.`,
-      { timeout: 1500 }
+      { timeout: 1500 },
     );
 
     if (remainingPopups.length > 0) {
@@ -242,13 +245,13 @@ async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
  * Analyze the structure of the careers page
  */
 async function analyzeCareersPageStructure(
-  stagehand: Stagehand
+  stagehand: Stagehand,
 ): Promise<"job-board" | "direct-listings" | "link-to-listings"> {
   try {
     // Check if there are search/filter controls
     const filterActions = await stagehand.observe(
       `Find job search input fields, filter dropdowns, or search buttons used to filter job listings.`,
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
 
     if (filterActions.length > 0) {
@@ -259,7 +262,7 @@ async function analyzeCareersPageStructure(
     // Check if there are direct job listings
     const jobListingActions = await stagehand.observe(
       `Find job listings, job cards, or job titles on this page.`,
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
 
     if (jobListingActions.length > 0) {
@@ -278,14 +281,14 @@ async function analyzeCareersPageStructure(
 async function searchUsingFilters(
   job: JobSchema,
   stagehand: Stagehand,
-  page: Page
+  page: Page,
 ): Promise<boolean> {
   console.log("   Using job board search strategy...");
 
   try {
     // Try to use search input
     const searchInputActions = await stagehand.observe(
-      `Find the job search input field or search box where you can type a job title to filter results.`
+      `Find the job search input field or search box where you can type a job title to filter results.`,
     );
 
     if (searchInputActions.length > 0) {
@@ -298,7 +301,7 @@ async function searchUsingFilters(
 
       // Click search button if available
       const searchButtonActions = await stagehand.observe(
-        `Find and click the search button, submit button, or "Go" button to search for jobs.`
+        `Find and click the search button, submit button, or "Go" button to search for jobs.`,
       );
 
       if (searchButtonActions.length > 0) {
@@ -315,7 +318,7 @@ async function searchUsingFilters(
         job.description
           ? `with description containing "${job.description.substring(0, 100)}"`
           : ""
-      }.`
+      }.`,
     );
 
     if (jobListingActions.length > 0) {
@@ -339,14 +342,14 @@ async function searchUsingFilters(
 async function navigateToListingsPage(
   job: JobSchema,
   stagehand: Stagehand,
-  page: Page
+  page: Page,
 ): Promise<boolean> {
   console.log("   Navigating to job listings page...");
 
   try {
     // Look for links like "View Open Positions", "See All Jobs", "Careers", etc.
     const jobsLinkActions = await stagehand.observe(
-      `Find and click on links or buttons that lead to job listings, such as "View Open Positions", "See All Jobs", "Open Roles", "Job Openings", or similar.`
+      `Find and click on links or buttons that lead to job listings, such as "View Open Positions", "See All Jobs", "Open Roles", "Job Openings", or similar.`,
     );
 
     if (jobsLinkActions.length > 0) {
@@ -372,7 +375,7 @@ async function navigateToListingsPage(
     return false;
   } catch (error) {
     console.warn(
-      `   ⚠️ Error navigating to listings: ${(error as Error).message}`
+      `   ⚠️ Error navigating to listings: ${(error as Error).message}`,
     );
     return false;
   }
@@ -385,7 +388,7 @@ async function searchDirectListings(
   job: JobSchema,
   stagehand: Stagehand,
   page: Page,
-  maxPages: number
+  maxPages: number,
 ): Promise<boolean> {
   console.log("   Searching direct job listings...");
   let currentPage = 0;
@@ -400,7 +403,7 @@ async function searchDirectListings(
         job.description
           ? `with description containing "${job.description.substring(0, 100)}"`
           : ""
-      }. Look for job cards, job titles, or job links that match this position.`
+      }. Look for job cards, job titles, or job links that match this position.`,
     );
 
     if (jobListingActions.length > 0) {
@@ -421,11 +424,11 @@ async function searchDirectListings(
     // Try pagination
     if (currentPage < maxPages) {
       console.log(
-        `   Job not found on page ${currentPage}, checking for next page...`
+        `   Job not found on page ${currentPage}, checking for next page...`,
       );
 
       const paginationActions = await stagehand.observe(
-        `Find and click the "Next" button, "Next Page", arrow (→, ›), or the next page number to navigate to the next page of job listings.`
+        `Find and click the "Next" button, "Next Page", arrow (→, ›), or the next page number to navigate to the next page of job listings.`,
       );
 
       if (paginationActions.length > 0) {
@@ -447,7 +450,7 @@ async function searchDirectListings(
   }
 
   console.warn(
-    `   ⚠️ Could not find job "${job.title}" after searching ${currentPage} page(s)`
+    `   ⚠️ Could not find job "${job.title}" after searching ${currentPage} page(s)`,
   );
   return false;
 }
@@ -456,13 +459,13 @@ async function fillApplicationForm(
   job: JobSchema,
   applicantProfile: ApplicantProfile,
   stagehand: Stagehand,
-  page: Page
+  page: Page,
 ): Promise<"submitted" | "failed" | "partial"> {
   const MAX_ITERATIONS = 50;
   let iteration = 0;
 
   console.log(
-    `\n📝 Starting application form for: "${job.title}" at ${job.company}`
+    `\n📝 Starting application form for: "${job.title}" at ${job.company}`,
   );
 
   try {
@@ -489,7 +492,7 @@ ${applicantProfile.workExperience
     (exp, idx) => `
 ${idx + 1}. ${exp.role} at ${exp.company}
    Duration: ${exp.startDate} - ${exp.endDate || "Present"}
-   Responsibilities: ${exp.responsibilities.join("; ")}`
+   Responsibilities: ${exp.responsibilities.join("; ")}`,
   )
   .join("\n")}
 
@@ -500,7 +503,7 @@ ${applicantProfile.education
 ${idx + 1}. ${edu.degree} in ${edu.field}
    Institution: ${edu.institution}
    Graduation: ${edu.graduationDate}
-   GPA: ${edu.gpa || "N/A"}`
+   GPA: ${edu.gpa || "N/A"}`,
   )
   .join("\n")}
 
@@ -518,7 +521,7 @@ ${idx + 1}. ${proj.name}
    Description: ${proj.description}
    Technologies: ${proj.technologies.join(", ")}
    Link: ${proj.link || "N/A"}
-   Period: ${proj.startDate || "N/A"} - ${proj.endDate || "N/A"}`
+   Period: ${proj.startDate || "N/A"} - ${proj.endDate || "N/A"}`,
   )
   .join("\n")}
 
@@ -534,7 +537,7 @@ Resume Path: ${applicantProfile.resumePath}
 `;
 
     console.log(
-      `   🤖 Using AI agent to fill out application form iteratively...`
+      `   🤖 Using AI agent to fill out application form iteratively...`,
     );
 
     // Use Stagehand's agent to intelligently fill out the form
@@ -563,12 +566,12 @@ Work methodically: fill one field, then move to the next. Be thorough and fill e
 
       // Check if we've reached the submit button
       const submitButtonCheck = await stagehand.observe(
-        `Find the final "Submit" or "Submit Application" button. Look for buttons with text like "Submit", "Submit Application", "Send Application", "Complete Application", or similar final submission buttons.`
+        `Find the final "Submit" or "Submit Application" button. Look for buttons with text like "Submit", "Submit Application", "Send Application", "Complete Application", or similar final submission buttons.`,
       );
 
       if (submitButtonCheck.length > 0) {
         console.log(
-          `   ✓ Application form completed - reached submit button (not clicked)`
+          `   ✓ Application form completed - reached submit button (not clicked)`,
         );
         return "submitted";
       }
@@ -596,12 +599,12 @@ Work methodically: fill one field, then move to the next. Be thorough and fill e
           hasNextButton: z.boolean(),
           hasSubmitButton: z.boolean(),
           isComplete: z.boolean(),
-        })
+        }),
       );
 
       if (pageState.hasSubmitButton) {
         console.log(
-          `   ✓ Application form completed - submit button available (not clicked)`
+          `   ✓ Application form completed - submit button available (not clicked)`,
         );
         return "submitted";
       }
@@ -631,12 +634,12 @@ Work methodically: fill one field, then move to the next. Be thorough and fill e
 
     // Final check for submit button
     const finalSubmitCheck = await stagehand.observe(
-      `Find the final "Submit" or "Submit Application" button.`
+      `Find the final "Submit" or "Submit Application" button.`,
     );
 
     if (finalSubmitCheck.length > 0) {
       console.log(
-        `   ✓ Application form completed - reached submit button (not clicked)`
+        `   ✓ Application form completed - reached submit button (not clicked)`,
       );
       return "submitted";
     }
@@ -645,7 +648,7 @@ Work methodically: fill one field, then move to the next. Be thorough and fill e
     return "partial";
   } catch (error) {
     console.error(
-      `   ❌ Error filling application form: ${(error as Error).message}`
+      `   ❌ Error filling application form: ${(error as Error).message}`,
     );
     return "failed";
   }
@@ -655,7 +658,7 @@ async function applyToJobs(
   jobs: JobSchema[],
   applicantProfile: ApplicantProfile,
   stagehand: Stagehand,
-  page: Page
+  page: Page,
 ): Promise<{
   applied: number;
   failed: number;
@@ -684,7 +687,7 @@ async function applyToJobs(
   for (let i = 0; i < jobs.length; i++) {
     const job = jobs[i];
     console.log(
-      `\n[${i + 1}/${jobs.length}] Processing: "${job.title}" at ${job.company}`
+      `\n[${i + 1}/${jobs.length}] Processing: "${job.title}" at ${job.company}`,
     );
 
     // Check if job has a career page URL
@@ -717,7 +720,7 @@ async function applyToJobs(
       // Step 2: Look for the apply button and click it
       console.log(`   Looking for apply button...`);
       const applyButtonActions = await stagehand.observe(
-        `Find and click the "Apply" button for this job. Look for buttons with text like "Apply", "Apply Now", "Submit Application", "Easy Apply", or similar.`
+        `Find and click the "Apply" button for this job. Look for buttons with text like "Apply", "Apply Now", "Submit Application", "Easy Apply", or similar.`,
       );
 
       if (applyButtonActions.length === 0) {
@@ -746,12 +749,12 @@ async function applyToJobs(
         job,
         applicantProfile,
         stagehand,
-        page
+        page,
       );
 
       if (applicationStatus === "submitted") {
         console.log(
-          `✅ Successfully applied to "${job.title}" at ${job.company}`
+          `✅ Successfully applied to "${job.title}" at ${job.company}`,
         );
         applied++;
         results.push({
@@ -781,8 +784,8 @@ async function applyToJobs(
         const delay = 3000 + Math.random() * 2000; // 3-5 seconds
         console.log(
           `   ⏳ Waiting ${Math.round(
-            delay / 1000
-          )}s before next application...`
+            delay / 1000,
+          )}s before next application...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -790,7 +793,7 @@ async function applyToJobs(
       console.error(
         `❌ Unexpected error processing "${job.title}": ${
           (error as Error).message
-        }`
+        }`,
       );
       failed++;
       results.push({
