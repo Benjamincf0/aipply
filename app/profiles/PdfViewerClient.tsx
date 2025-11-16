@@ -76,7 +76,7 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
 
       {/* PDF Display */}
       <div className="text-editor-text mb-5 h-full flex-1 overflow-auto">
-        <div className="flex min-h-full justify-center p-8">
+        <div className="flex min-h-full justify-center overflow-auto p-8">
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}

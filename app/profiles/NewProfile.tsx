@@ -23,10 +23,10 @@ export default function NewProfile() {
     const formData = new FormData(e.currentTarget);
 
     const profile: Omit<Profile, "id"> = {
-      firstName: formData.get("firstName")!.toString(),
-      lastName: formData.get("lastName")!.toString(),
-      email: formData.get("email")!.toString(),
-      phone: formData.get("phone")!.toString(),
+      firstName: formData.get("firstName")!.toString() || "",
+      lastName: formData.get("lastName")!.toString() || "",
+      email: formData.get("email")!.toString() || "",
+      phone: formData.get("phone")!.toString() || "",
       resume: file.current!,
       country: formData.get("country")?.toString(),
       city: formData.get("city")?.toString(),
@@ -75,7 +75,7 @@ export default function NewProfile() {
                 <Input
                   id="firstName"
                   name="firstName"
-                  required
+                  // required
                   placeholder="John"
                 />
               </Field>
@@ -84,7 +84,7 @@ export default function NewProfile() {
                 <Input
                   id="lastName"
                   name="lastName"
-                  required
+                  // required
                   placeholder="Doe"
                 />
               </Field>
@@ -94,7 +94,7 @@ export default function NewProfile() {
               <Input
                 id="email"
                 name="email"
-                required
+                // required
                 placeholder="john.doe@example.com"
                 type="email"
               />
@@ -104,7 +104,7 @@ export default function NewProfile() {
               <Input
                 id="phone"
                 name="phone"
-                required
+                // required
                 type="tel"
                 placeholder="+1 (555) 555-5555"
                 pattern="^\+[0-9]{1,2} [0-9]{3} [0-9]{3}-[0-9]{4}$"
