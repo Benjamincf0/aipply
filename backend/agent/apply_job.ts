@@ -2,89 +2,68 @@ import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
 import { JobSchema, ApplicantProfile } from "../types.js";
 
-async function findSpecificJobOnCareerPage(
-  job: JobSchema,
+export async function handlePopups(
   stagehand: Stagehand,
   page: Page,
-): Promise<boolean> {
-  const MAX_PAGINATION_PAGES = 5;
-  let currentPage = 0;
+): Promise<void> {
+  console.log(" Checking for popups and overlays...");
 
-  console.log(`\nSearching for job: "${job.title}" at ${job.company}`);
-
-  if (!job.applyUrl) {
-    console.warn(`No career page URL provided for ${job.title}`);
-    return false;
-  }
-
-  try {
-    await page.goto(job.applyUrl, { waitUntil: "networkidle" });
-    new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // 1. Handle popups
-    await handlePopups(stagehand, page);
-
-    // 2. Analyze the page structure
-    const pageStructure = await analyzeCareersPageStructure(stagehand);
-
-    // Look for the specific job on the career page
-    let found = false;
-
-    if (pageStructure === "job-board") {
-      found = await searchUsingFilters(job, stagehand, page);
-    } else if (pageStructure === "link-to-listings") {
-      found = await navigateToListingsPage(job, stagehand, page);
-    } else {
-      found = await searchDirectListings(
-        job,
-        stagehand,
-        page,
-        MAX_PAGINATION_PAGES,
+  // Handle cookie consent - try multiple times as popups may appear after page load
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const cookieActions = await stagehand.observe(
+        `Find and click buttons to accept cookies. Look for buttons with text like "Accept All", "Allow All", "Accept All Cookies", "I Accept", "Accept", "Allow Cookies", or similar. These are usually in banners at the top or bottom of the page.`,
+        { timeout: 2000 },
       );
+
+      if (cookieActions.length > 0) {
+        console.log("Accepting cookies...");
+        await stagehand.act(cookieActions[0]);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Check again in case another popup appears
+        continue;
+      }
+    } catch {
+      // No cookie popup found, continue
     }
-    return found;
-  } catch (error) {
-    console.error(
-      `Error searching for job "${job.title}":`,
-      (error as Error).message,
-    );
-    return false;
+    break;
   }
-}
 
-async function handlePopups(stagehand: Stagehand, page: Page): Promise<void> {
-  console.log("Checking for popups...");
+  // Handle ads, modals, and overlays
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const adCloseActions = await stagehand.observe(
+        `Find and click the close button (X, ✕, ×, Close, or similar) on any ads, popups, modal dialogs, or overlays that are blocking or covering the page content. Look for close buttons in the top-right corner of popups or banners.`,
+        { timeout: 2000 },
+      );
 
-  // Handle cookie consent
+      if (adCloseActions.length > 0) {
+        console.log("   ✓ Closing popup/ad...");
+        await stagehand.act(adCloseActions[0]);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        // Check again in case another popup appears
+        continue;
+      }
+    } catch {
+      // No ads found, continue
+    }
+    break;
+  }
+
+  // Final check for any remaining overlays
   try {
-    const cookieActions = await stagehand.observe(
-      `Find and click the "Accept All", "Allow All", "Accept All Cookies", or similar button to accept cookies. Look for cookie consent banners at the top or bottom of the page.`,
-      { timeout: 3000 },
+    const remainingPopups = await stagehand.observe(
+      `Check if there are any remaining popups, modals, or overlays blocking the page. Look for any elements that might be covering the main content.`,
+      { timeout: 1500 },
     );
 
-    if (cookieActions.length > 0) {
-      console.log("   ✓ Accepting cookies...");
-      await stagehand.act(cookieActions[0]);
+    if (remainingPopups.length > 0) {
+      console.log("   ✓ Closing remaining overlay...");
+      await stagehand.act(remainingPopups[0]);
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   } catch {
-    // No cookie popup found, continue
-  }
-
-  // Handle ads
-  try {
-    const adCloseActions = await stagehand.observe(
-      `Find and click the close button (X, ✕, Close, or similar) on any ads, popups, or modal dialogs that are blocking the page content.`,
-      { timeout: 3000 },
-    );
-
-    if (adCloseActions.length > 0) {
-      console.log("   ✓ Closing ad popup...");
-      await stagehand.act(adCloseActions[0]);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  } catch {
-    // No ads found, continue
+    // No remaining popups
   }
 }
 

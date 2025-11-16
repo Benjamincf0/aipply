@@ -51,6 +51,7 @@ export const EducationSchema = z.object({
   degree: z.string(),
   field: z.string(),
   startDate: z.string(),
+  currentYear: z.number().optional(),
   graduationDate: z.string(),
   gpa: z.string().optional(),
 });
@@ -104,6 +105,9 @@ export const ApplicantProfileSchema = z.object({
   willingToRelocate: z.boolean().optional(),
   expectedSalary: z.string().optional(),
   noticePeriod: z.string().optional(),
+  openForHybrid: z.boolean().optional(),
+  openForRemote: z.boolean().optional(),
+  openForOnsite: z.boolean().optional(),
 
   legallyAllowedToWork: z.boolean().optional(),
   legallyAllowedToWorkInCanada: z.boolean().optional(),
@@ -127,6 +131,8 @@ export const ApplicantProfileSchema = z.object({
   eligibleForHybrid: z.boolean().optional(),
 
   interestedTermLength: z.array(z.string()).optional(),
+
+  heardAboutUs: z.string().optional(),
   // Resume
   resumePath: z.string(),
 });

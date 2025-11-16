@@ -1,9 +1,8 @@
 import "dotenv/config";
 import { Stagehand } from "@browserbasehq/stagehand";
 import { APPLICANT_PROFILE } from "./dummy_data.js";
-import { getJobsFromJobBoard } from "./scrape_jobs.js";
-import { applyToJobs } from "./apply_job.js";
-import { INDEED_TEST_URL } from "./const.js";
+import { fillApplicationForm } from "./fill_application_cursor.js";
+import { handlePopups } from "./apply_job.js";
 
 let BROWSERBASE_PROJECT_ID: string;
 let BROWSERBASE_API_KEY: string;
@@ -21,7 +20,7 @@ try {
 async function main() {
   const stagehand = new Stagehand({
     env: "LOCAL",
-    model: "google/gemini-2.0-flash-lite",
+    model: "openai/gpt-5-mini",
   });
 
   try {
@@ -34,7 +33,11 @@ async function main() {
 
     const page = stagehand.context.pages()[0];
 
-    const url = INDEED_TEST_URL;
+    const GIVEN_URL = [
+      "https://applynow.net.au/jobs/ni/BIL202530-software-firmware-developer-intern",
+      "https://durabuiltdoorswindows.applytojob.com/apply/ZFqbK3gzHV/Engineering-COOP?source=Our%20Career%20Page%20Widget",
+      "https://jobs.lever.co/wealthsimple/9ff3e932-cdc7-4161-b4aa-29b4f58866ec/apply",
+    ];
 
     // 1. Collect jobs from job board
     const jobs = await getJobsFromJobBoard("indeed", url, stagehand, page);
@@ -51,6 +54,31 @@ async function main() {
       console.log("\nNo jobs with career page URLs found. Exiting...");
       return;
     }
+
+    // console.log(`Stagehand Session Started`);
+    // console.log(
+    //   `Watch live: https://browserbase.com/sessions/${stagehand.browserbaseSessionId}`
+    // );
+
+    // const page = stagehand.context.pages()[0];
+
+    // const url = INDEED_TEST_URL;
+
+    // // 1. Collect jobs from job board
+    // const jobs = await getJobsFromJobBoard("indeed", url, stagehand, page);
+    // console.log(`\nCollected ${jobs.length} jobs from job board`);
+    // console.log(JSON.stringify(jobs, null, 2));
+
+    // // 2. Filter jobs that have career page URLs
+    // const jobsWithCareerPages = jobs.filter((job) => job.applyUrl);
+    // console.log(
+    //   `\nFound ${jobsWithCareerPages.length} jobs with career page URLs`
+    // );
+
+    // if (jobsWithCareerPages.length === 0) {
+    //   console.log("\nNo jobs with career page URLs found. Exiting...");
+    //   return;
+    // }
 
     // 3. Apply to jobs using the applicant profile
     const applicationResults = await applyToJobs(
@@ -87,3 +115,7 @@ async function main() {
     await stagehand.close();
   }
 }
+
+main().catch((error) => {
+  console.error("Unhandled error in main:", error);
+});
