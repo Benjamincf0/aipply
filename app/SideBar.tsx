@@ -14,9 +14,13 @@ import { cn } from "@/lib/utils";
 import { Archive, BriefcaseBusiness, Home, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Context } from "./Context";
+import { use } from "react";
 
 export default function SideBar() {
   const path = usePathname();
+
+  const { state } = use(Context);
 
   const routes = [
     { href: "/", icon: Home },
@@ -49,6 +53,8 @@ export default function SideBar() {
                           ? "Home"
                           : route.href.slice(1).slice(0, 1).toUpperCase() +
                             route.href.slice(1).slice(1)}
+                        {route.href === "/jobs" &&
+                          `(${state.applications.filter((app) => app.status !== "completed").length})`}
                       </span>
                     </Link>
                   </SidebarMenuButton>

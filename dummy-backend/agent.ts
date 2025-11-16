@@ -115,12 +115,12 @@ class Agent {
           await this.stagehand.act(field);
         }
 
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         hasFilledForm = await this.stagehand.extract(
           "Detect if the applicant has filled all the fields of the application form on the page",
           z.boolean(),
         );
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       const nextButtons = await this.stagehand.observe(

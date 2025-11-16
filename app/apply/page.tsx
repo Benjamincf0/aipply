@@ -12,7 +12,7 @@ export default function ApplyPage() {
   return (
     <div className="flex w-full flex-1 flex-col gap-2 overflow-hidden p-1">
       <ApplyForm setData={setData} formRef={formRef} />
-      <Results data={data} formRef={formRef} />
+      <Results data={data} formRef={formRef} setData={setData} />
     </div>
   );
 }

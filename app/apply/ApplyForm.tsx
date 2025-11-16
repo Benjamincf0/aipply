@@ -1,6 +1,5 @@
 "use client";
 
-import { JobSchema } from "@/backend/types";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {

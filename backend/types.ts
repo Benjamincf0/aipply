@@ -18,6 +18,7 @@ export const ApplicationStatusSchema = z.object({
   startDate: z.string(),
   completedDate: z.string().optional(),
   status: z.enum(["pending", "running", "failed", "completed"]),
+  profileId: z.number(),
 });
 
 export type JobSchema = z.infer<typeof JobSchema>;

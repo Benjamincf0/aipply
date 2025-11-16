@@ -8,59 +8,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
-import z from "zod";
-import { ApplicationStatusSchema } from "@/backend/types";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { ApplicationStatusSchema } from "@/dummy-backend/types";
 import { cn } from "@/lib/utils";
 import LiveView from "./LiveView";
-import { useState } from "react";
+import { useState, use } from "react";
+import { Context } from "../Context";
 
 export default function JobsPage() {
-  const { data, isPending } = useQuery({
-    queryKey: ["jobs"],
-    queryFn: async () => {
-      const res = await fetch("http://localhost:8080/api/application/list");
-      if (!res.ok) {
-        return [];
-      }
-
-      const data = await res.json();
-
-      const parsedData = z.array(ApplicationStatusSchema).safeParse(data);
-
-      if (!parsedData.success) {
-        return [];
-      }
-
-      return parsedData.data;
-    },
-  });
+  const { state } = use(Context);
 
   const [selectedApplication, setSelectedApplication] = useState<
     ApplicationStatusSchema | undefined
   >();
-
-  if (isPending || !data) {
-    return (
-      <div className="flex w-full flex-1 flex-col items-center justify-center gap-2">
-        Loading...
-      </div>
-    );
-  }
-
-  if (data.length === 0) {
-    return (
-      <div className="flex w-full flex-1 items-center justify-center gap-2">
-        Navigate to the{" "}
-        <Button asChild variant="link" className="p-0">
-          <Link href="/apply">Apply</Link>
-        </Button>
-        page to search for jobs.
-      </div>
-    );
-  }
 
   return (
     <div className="flex w-full flex-1 gap-4">
@@ -78,9 +37,9 @@ export default function JobsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((app) => (
+          {state.applications.map((app) => (
             <TableRow
-              key={app.job.id}
+              key={app.job.job_id}
               onClick={() => setSelectedApplication(app)}
               className={cn(
                 "w-full cursor-pointer",
@@ -103,7 +62,7 @@ export default function JobsPage() {
               </TableCell>
               <TableCell>
                 <div className="font-bold">{app.job.title}</div>
-                <div>{app.job.company}</div>
+                <div>{app.job.company_name}</div>
               </TableCell>
               {selectedApplication === undefined && (
                 <>

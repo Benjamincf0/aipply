@@ -1,4 +1,3 @@
-import { JobSchema } from "@/backend/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,13 +18,16 @@ import {
 } from "@/components/ui/select";
 import { JobResultSchema } from "@/dummy-backend/types";
 import Link from "next/link";
+import { use } from "react";
+import { Context } from "../Context";
 
 type ResultsProps = {
   data: JobResultSchema[] | undefined;
   formRef: React.RefObject<HTMLFormElement>;
+  setData: (data: JobResultSchema[] | undefined) => void;
 };
 
-export default function Results({ data, formRef }: ResultsProps) {
+export default function Results({ data, formRef, setData }: ResultsProps) {
   if (!data)
     return (
       <div className="flex w-full flex-1 flex-col items-center justify-center gap-2">
@@ -59,7 +61,7 @@ export default function Results({ data, formRef }: ResultsProps) {
           ))}
         </div>
       </div>
-      <Footer />
+      <Footer formRef={formRef} data={data} setData={setData} />
     </>
   );
 }
@@ -80,16 +82,16 @@ function JobCard({ job }: { job: JobResultSchema }) {
           >
             Apply
           </Button>
-          <Button variant="link" asChild className="text-muted-foreground p-0">
-            <Link
-              href={job.share_link}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Share
-            </Link>
-          </Button>
         </CardAction>
+        <Button
+          variant="link"
+          asChild
+          className="text-muted-foreground w-fit p-0"
+        >
+          <Link href={job.share_link} target="_blank" rel="noopener noreferrer">
+            Share
+          </Link>
+        </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <p>Apply links:</p>
@@ -118,23 +120,74 @@ function JobCard({ job }: { job: JobResultSchema }) {
   );
 }
 
-function Footer() {
+function Footer({
+  formRef,
+  data,
+  setData,
+}: {
+  formRef: React.RefObject<HTMLFormElement>;
+  data: JobResultSchema[];
+  setData: (data: JobResultSchema[] | undefined) => void;
+}) {
+  const { state, dispatch } = use(Context);
+
   return (
-    <div className="flex w-full shrink-0 justify-end gap-2">
-      <Select defaultValue="">
-        <SelectTrigger id="profile" name="profile">
-          <SelectValue placeholder="profile" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Profile</SelectLabel>
-            <SelectItem value="profile-1">Profile 1</SelectItem>
-            <SelectItem value="profile-2">Profile 2</SelectItem>
-            <SelectItem value="profile-3">Profile 3</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <Button>Apply All</Button>
+    <div className="flex w-full shrink-0 justify-between gap-2">
+      <Button
+        variant="secondary"
+        onClick={() => formRef.current.requestSubmit()}
+      >
+        Search
+      </Button>
+      <div className="flex gap-2">
+        <Select
+          defaultValue=""
+          onValueChange={(value) => {
+            console.log("value:", value);
+
+            dispatch({
+              type: "setSelectedProfileId",
+              id: +value,
+            });
+          }}
+        >
+          <SelectTrigger id="profile" name="profile">
+            <SelectValue placeholder="profile" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Profile</SelectLabel>
+              {state.profiles.map((p) => (
+                <SelectItem value={"" + p.id} key={p.id}>
+                  Profile {p.id}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Button
+          onClick={async () => {
+            const ws = state.websocket;
+
+            if (!ws) {
+              return;
+            }
+
+            ws.send(
+              JSON.stringify({
+                type: "application/add",
+                data: {
+                  profileId: state.selectedProfileId,
+                  jobs: data,
+                },
+              }),
+            );
+            setData([]);
+          }}
+        >
+          Apply All
+        </Button>
+      </div>
     </div>
   );
 }

@@ -43,5 +43,24 @@ export const JobResultSchema = z.object({
   job_id: z.string(),
 });
 
+export const ApplicationStatusSchema = z.object({
+  job: JobResultSchema,
+  sessionId: z.string(),
+  startDate: z.string(),
+  completedDate: z.string().optional(),
+  status: z.enum(["pending", "running", "failed", "completed"]),
+  profileId: z.number(),
+});
+
+export const WebSocketMessageSchema = z.object({
+  type: z.literal("application/add"),
+  data: z.object({
+    profileId: z.number(),
+    jobs: z.array(JobResultSchema),
+  }),
+});
+
 export type JobSearchReq = z.infer<typeof JobSearchReq>;
 export type JobResultSchema = z.infer<typeof JobResultSchema>;
+export type ApplicationStatusSchema = z.infer<typeof ApplicationStatusSchema>;
+export type WebSocketMessageSchema = z.infer<typeof WebSocketMessageSchema>;

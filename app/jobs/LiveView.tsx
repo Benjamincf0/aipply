@@ -1,4 +1,4 @@
-import { ApplicationStatusSchema } from "@/backend/types";
+import { ApplicationStatusSchema } from "@/dummy-backend/types";
 
 type Props = {
   selectedApplication: ApplicationStatusSchema | undefined;
@@ -17,7 +17,7 @@ export default function LiveView({ selectedApplication }: Props) {
           <div className="font-bold">
             Title: {selectedApplication.job.title}
           </div>
-          <div>Company: {selectedApplication.job.company}</div>
+          <div>Company: {selectedApplication.job.company_name}</div>
           <div>Start date: {selectedApplication.startDate}</div>
           <div>Completed date: {selectedApplication.completedDate ?? "-"}</div>
           <div>Status: {selectedApplication.status}</div>
