@@ -23,6 +23,7 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
   const [transformOrigin, setTransformOrigin] = useState("center center");
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const pageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setNumPages(numPages);
@@ -36,6 +37,16 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
     link.click();
     document.body.removeChild(link);
   }
+
+  useEffect(() => {
+    const pageElement = pageRefs.current[pageNumber];
+    if (pageElement && containerRef.current) {
+      pageElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [pageNumber]);
 
   useEffect(() => {
     const preventZoom = (e: WheelEvent) => {
@@ -142,14 +153,21 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
             className="inline-block max-w-full rounded-sm shadow-md"
           >
             {Array.from(new Array(numPages), (_, index) => (
-              <Page
+              <div
                 key={`page_${index + 1}`}
-                pageNumber={index + 1}
-                // width={(baseWidth * zoom) / 100}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-                width={baseWidth}
-              />
+                ref={(el) => {
+                  pageRefs.current[index + 1] = el;
+                }}
+              >
+                <Page
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1}
+                  // width={(baseWidth * zoom) / 100}
+                  renderTextLayer={true}
+                  renderAnnotationLayer={true}
+                  width={baseWidth}
+                />
+              </div>
             ))}
           </Document>
         </div>
