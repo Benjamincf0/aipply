@@ -5,12 +5,12 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
   firstName: "John",
   lastName: "Doe",
   email: "john.doe@example.com",
-  phone: "+1-555-123-4567",
-  location: "San Francisco, CA, USA",
-  city: "San Francisco",
-  state: "California (CA)",
-  country: "United States",
-  postalCode: "94102",
+  phone: "+15551234567",
+  location: "Toronto, Ontario, Canada",
+  city: "Toronto",
+  state: "Ontario",
+  country: "Canada",
+  postalCode: "M5H 2N2",
   streetAddress: "123 Main St",
 
   // Links
@@ -133,6 +133,9 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
   willingToRelocate: true,
   expectedSalary: "$80,000 - $100,000",
   noticePeriod: "2 weeks",
+  openForHybrid: true,
+  openForRemote: true,
+  openForOnsite: true,
 
   legallyAllowedToWork: true,
   legallyAllowedToWorkInCanada: true,
@@ -213,6 +216,9 @@ Requires Sponsorship: ${APPLICANT_PROFILE.requiresSponsorship ? "Yes" : "No"}
 Willing to Relocate: ${APPLICANT_PROFILE.willingToRelocate ? "Yes" : "No"}
 Expected Salary: ${APPLICANT_PROFILE.expectedSalary || "N/A"}
 Notice Period: ${APPLICANT_PROFILE.noticePeriod || "N/A"}
+Open for Hybrid: ${APPLICANT_PROFILE.openForHybrid ? "Yes" : "No"}
+Open for Remote: ${APPLICANT_PROFILE.openForRemote ? "Yes" : "No"}
+Open for Onsite: ${APPLICANT_PROFILE.openForOnsite ? "Yes" : "No"}
 
 Eligible to Work: ${APPLICANT_PROFILE.legallyAllowedToWork ? "Yes" : "No"}
 Eligible to Work United States: ${
@@ -222,5 +228,13 @@ Eligible to Work Canada: ${APPLICANT_PROFILE.legallyAllowedToWorkInCanada ? "Yes
 
 Eligible for Internship: ${APPLICANT_PROFILE.eligibleForInternship ? "Yes" : "No"}
 Eligible for Co-op: ${APPLICANT_PROFILE.eligibleForCoop ? "Yes" : "No"}
+
+Interested Term Lengths: ${
+  APPLICANT_PROFILE.interestedTermLength
+    ? APPLICANT_PROFILE.interestedTermLength.join(", ")
+    : "N/A"
+}
+
+Hear About Us: ${APPLICANT_PROFILE.heardAboutUs || "N/A"}
 
 Cover Letter: ${APPLICANT_PROFILE.coverLetter || "N/A"}`;

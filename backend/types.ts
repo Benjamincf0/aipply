@@ -104,6 +104,9 @@ export const ApplicantProfileSchema = z.object({
   willingToRelocate: z.boolean().optional(),
   expectedSalary: z.string().optional(),
   noticePeriod: z.string().optional(),
+  openForHybrid: z.boolean().optional(),
+  openForRemote: z.boolean().optional(),
+  openForOnsite: z.boolean().optional(),
 
   legallyAllowedToWork: z.boolean().optional(),
   legallyAllowedToWorkInCanada: z.boolean().optional(),

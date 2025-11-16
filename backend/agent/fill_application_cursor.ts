@@ -246,6 +246,36 @@ async function smartFillForm(
         query: "Find LinkedIn URL input field",
         value: applicantProfile.linkedin || "",
       },
+      {
+        query: "Find Country field",
+        value: applicantProfile.country,
+      },
+    ];
+
+    const commonDropdownFields = [
+      {
+        query: "Find Country dropdown field' dropdown field",
+        value: applicantProfile.country,
+      },
+      {
+        query: "Find State/Province dropdown field",
+        value: applicantProfile.state,
+      },
+    ];
+
+    const commonRadioFields = [
+      {
+        query: "Find eligible to work in Canada radio button",
+        value: applicantProfile.legallyAllowedToWorkInCanada ? "Yes" : "No",
+      },
+      {
+        query: "Find eligible for internship/coop radio button",
+        value: applicantProfile.eligibleForCoop ? "Yes" : "No",
+      },
+      {
+        query: "Find enrolled in a co-op program radio button",
+        value: applicantProfile.eligibleForCoop ? "Yes" : "No",
+      },
     ];
 
     for (const field of commonFields) {
@@ -265,6 +295,52 @@ async function smartFillForm(
         }
       } catch (error: any) {
         // Field not found or couldn't be filled, continue
+        console.log(`Could not fill ${field.query}: ${error.message}`);
+      }
+    }
+
+    for (const field of commonDropdownFields) {
+      if (!field.value) continue;
+
+      try {
+        const elements = await stagehand.observe(field.query);
+        if (elements.length > 0) {
+          await stagehand.act({
+            ...elements[0],
+            description: "click the 'select for Country*' dropdown",
+            method: "click",
+            arguments: [field.query],
+          });
+          await stagehand.act({
+            ...elements[0],
+            method: "choose",
+            arguments: [field.value],
+          });
+          filledCount++;
+          console.log(`Selected "${field.query}" with "${field.value}"`);
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      } catch (error: any) {
+        console.log(`Could not fill ${field.query}: ${error.message}`);
+      }
+    }
+
+    for (const field of commonRadioFields) {
+      if (!field.value) continue;
+      try {
+        const elements = await stagehand.observe(field.query);
+        if (elements.length > 0) {
+          await stagehand.act({
+            ...elements[0],
+            method: "click",
+            description: `click the ${field.value} radio button for the question ${field.query}`,
+            arguments: [field.value],
+          });
+          filledCount++;
+          console.log(`Selected "${field.query}" with "${field.value}"`);
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      } catch (error: any) {
         console.log(`Could not fill ${field.query}: ${error.message}`);
       }
     }
@@ -380,103 +456,189 @@ export async function fillApplicationForm(
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Check for remaining empty fields and prioritize required ones
-      const allFields = await stagehand
-        .observe("Find all empty text inputs and textareas fields")
-        .catch();
+      // Detect fields by type with more specific queries
+      console.log("\n=== Detecting unfilled fields by type ===");
 
-      const dropDowns = await stagehand
-        .observe("FInd all empty dropdowns fields")
-        .catch();
-      allFields.push(...dropDowns);
+      const fieldsByType: {
+        text: any[];
+        dropdown: any[];
+        radio: any[];
+        checkbox: any[];
+      } = {
+        text: [],
+        dropdown: [],
+        radio: [],
+        checkbox: [],
+      };
 
-      const radioButtons = await stagehand
-        .observe("Find all unselected radio button groups")
-        .catch();
-      allFields.push(...radioButtons);
+      // Text inputs and textareas
+      try {
+        const textFields = await stagehand.observe(
+          "Find all empty text input fields, including those for name, email, phone, address, etc.",
+        );
+        fieldsByType.text.push(...textFields);
+        console.log(`Found ${textFields.length} text input fields`);
+      } catch (error: any) {
+        console.log(`Could not find text fields: ${error.message}`);
+      }
 
-      const checkboxes = await stagehand
-        .observe("Find all unchecked required checkboxes")
-        .catch();
-      allFields.push(...checkboxes);
+      // Textareas separately
+      try {
+        const textareas = await stagehand.observe(
+          "Find all empty textarea fields for longer text like cover letters or descriptions",
+        );
+        fieldsByType.text.push(...textareas);
+        console.log(`Found ${textareas.length} textarea fields`);
+      } catch (error: any) {
+        console.log(`Could not find textarea fields: ${error.message}`);
+      }
 
-      console.log(`\nFound ${allFields.length} remaining unfilled fields`);
+      // Dropdowns/Select elements
+      try {
+        const dropdowns = await stagehand.observe(
+          "Find all dropdown select menus that need a selection",
+        );
+        fieldsByType.dropdown.push(...dropdowns);
+        console.log(`Found ${dropdowns.length} dropdown fields`);
+      } catch (error: any) {
+        console.log(`Could not find dropdown fields: ${error.message}`);
+      }
 
-      // Separate required and optional fields
-      const requiredFields = allFields.filter(
-        (field: any) =>
-          field.description?.toLowerCase().includes("*") ||
-          field.description?.toLowerCase().includes("required"),
+      // Radio buttons
+      try {
+        const radioGroups = await stagehand.observe(
+          "Find all radio button groups where no option is selected yet",
+        );
+        fieldsByType.radio.push(...radioGroups);
+        console.log(`Found ${radioGroups.length} radio button groups`);
+      } catch (error: any) {
+        console.log(`Could not find radio fields: ${error.message}`);
+      }
+
+      // Required checkboxes (not already checked)
+      try {
+        const checkboxes = await stagehand.observe(
+          "Find all required checkboxes that are not yet checked",
+        );
+        fieldsByType.checkbox.push(...checkboxes);
+        console.log(`Found ${checkboxes.length} required checkbox fields`);
+      } catch (error: any) {
+        console.log(`Could not find checkbox fields: ${error.message}`);
+      }
+
+      const totalFields = Object.values(fieldsByType).reduce(
+        (sum, fields) => sum + fields.length,
+        0,
       );
-      const optionalFields = allFields.filter(
-        (field: any) =>
-          !field.description?.toLowerCase().includes("*") &&
-          !field.description?.toLowerCase().includes("required"),
-      );
+      console.log(`\nTotal unfilled fields found: ${totalFields}`);
 
-      console.log(
-        `  - ${requiredFields.length} required fields, ${optionalFields.length} optional fields`,
-      );
+      // Separate required and optional for each type
+      const separateRequiredOptional = (fields: any[]) => {
+        const required = fields.filter(
+          (f: any) =>
+            f.description?.toLowerCase().includes("*") ||
+            f.description?.toLowerCase().includes("required"),
+        );
+        const optional = fields.filter(
+          (f: any) =>
+            !f.description?.toLowerCase().includes("*") &&
+            !f.description?.toLowerCase().includes("required"),
+        );
+        return { required, optional };
+      };
 
-      // Process required fields first, then optional
-      const fieldsToFill = [...requiredFields];
+      // Process fields by type - handle required fields first
+      const processingOrder = [
+        { type: "text", fields: separateRequiredOptional(fieldsByType.text) },
+        {
+          type: "dropdown",
+          fields: separateRequiredOptional(fieldsByType.dropdown),
+        },
+        { type: "radio", fields: separateRequiredOptional(fieldsByType.radio) },
+        {
+          type: "checkbox",
+          fields: separateRequiredOptional(fieldsByType.checkbox),
+        },
+      ];
 
-      if (fieldsToFill.length > 0 && fieldsToFill.length < 20) {
-        console.log("Using AI agent to fill fields intelligently...");
+      let totalProcessed = 0;
+      for (const { type, fields } of processingOrder) {
+        const fieldsToProcess = [...fields.required, ...fields.optional];
 
-        for (let i = 0; i < Math.min(fieldsToFill.length, 15); i++) {
-          const field = fieldsToFill[i];
+        if (fieldsToProcess.length === 0) continue;
+
+        console.log(
+          `\n=== Processing ${fieldsToProcess.length} ${type} fields (${fields.required.length} required) ===`,
+        );
+
+        for (let i = 0; i < Math.min(fieldsToProcess.length, 10); i++) {
+          const field = fieldsToProcess[i];
           const fieldDescription = field.description || "unknown field";
+          const isRequired = fields.required.includes(field);
 
           console.log(
-            `\n[${i + 1}/${Math.min(fieldsToFill.length, 15)}] Processing: "${fieldDescription}"`,
+            `\n[${i + 1}/${Math.min(fieldsToProcess.length, 10)}] ${type.toUpperCase()}: "${fieldDescription}"${isRequired ? " (REQUIRED)" : ""}`,
           );
 
           try {
-            // Use agent to intelligently fill this specific field
+            let instruction = "";
+
+            // Create type-specific instructions
+            if (type === "text") {
+              instruction = `Fill the text field "${fieldDescription}" with the appropriate value from the applicant profile. Type the value into the input field.`;
+            } else if (type === "dropdown") {
+              instruction = `Select an appropriate option from the dropdown menu "${fieldDescription}" based on the applicant profile. Click the dropdown and choose the best matching option.`;
+            } else if (type === "radio") {
+              instruction = `Select the appropriate radio button option for "${fieldDescription}" based on the applicant profile. Click on the correct radio button.`;
+            } else if (type === "checkbox") {
+              instruction = `Check the checkbox for "${fieldDescription}" if it's required or appropriate. Click on the checkbox to check it.`;
+            }
+
             const result = await agent.execute({
-              instruction: `Fill the form "${fieldDescription}"`,
-              maxSteps: 4,
+              instruction,
+              maxSteps: 3,
             });
 
             if (result.success) {
-              console.log(`Successfully filled field`);
+              console.log(`Successfully processed ${type} field`);
+              totalProcessed++;
             } else {
-              console.log(`Failed to fill field`);
+              console.log(`Failed to process ${type} field`);
             }
           } catch (error: any) {
-            console.log(`Error filling field: ${error.message}`);
+            console.log(`Error processing ${type} field: ${error.message}`);
           }
 
-          await new Promise((resolve) => setTimeout(resolve, 800));
+          await new Promise((resolve) => setTimeout(resolve, 600));
         }
-
-        // Check if we made progress
-        if (allFields.length === previousFieldCount) {
-          noProgressCount++;
-          console.log(
-            `\nNo progress made (${noProgressCount}/3) - same number of unfilled fields`,
-          );
-
-          if (noProgressCount >= 3) {
-            console.log(
-              "Stuck after 3 attempts with no progress. Trying to proceed...",
-            );
-            // Reset counter and try to move forward
-            noProgressCount = 0; // TODO: smth idk
-          }
-        } else {
-          noProgressCount = 0;
-          console.log(
-            `\nProgress: ${previousFieldCount} → ${allFields.length} unfilled fields`,
-          );
-        }
-        previousFieldCount = allFields.length;
       }
+
+      console.log(`\n=== Processed ${totalProcessed} fields ===`);
+
+      // Check if we made progress
+      if (totalFields === previousFieldCount) {
+        noProgressCount++;
+        console.log(
+          `\nNo progress made (${noProgressCount}/3) - same number of unfilled fields`,
+        );
+
+        if (noProgressCount >= 3) {
+          console.log(
+            "Stuck after 3 attempts with no progress. Trying to proceed...",
+          );
+          noProgressCount = 0;
+        }
+      } else {
+        noProgressCount = 0;
+        console.log(
+          `\nProgress: ${previousFieldCount} → ${totalFields} unfilled fields`,
+        );
+      }
+      previousFieldCount = totalFields;
 
       // Check for submit button (ggs were done)
       const submitButton = await stagehand.observe(
-        "Find final submit or 'soumettre' button (not next/continue)",
+        "Find final submit button (not next/continue)",
       );
       if (submitButton.length > 0) {
         console.log("\nApplication completed - reached submit button!");
@@ -489,7 +651,23 @@ export async function fillApplicationForm(
       );
       if (nextButton.length > 0) {
         console.log("Clicking next/continue button...");
-        await stagehand.act(nextButton[0]);
+        try {
+          // Use the agent to click the button for more reliable interaction
+          const result = await agent.execute({
+            instruction:
+              "Click the next or continue button to proceed to the next page of the application form",
+            maxSteps: 2,
+          });
+          if (result.success) {
+            console.log("Successfully clicked next button");
+          } else {
+            console.log(
+              "Agent reported failure clicking next button, but proceeding anyway",
+            );
+          }
+        } catch (error: any) {
+          console.log(`Error clicking next button: ${error.message}`);
+        }
         await new Promise((resolve) => setTimeout(resolve, 2000));
         continue;
       }
