@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@browserbasehq/stagehand": "^3.0.2",
+    "openai": "^6.9.0",
+    "playright": "^0.0.22",
     "zod": "3"
   }
 }

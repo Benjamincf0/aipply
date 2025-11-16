@@ -1,5 +1,7 @@
+import z from "zod";
 import { ApplicationStatusSchema, JobSchema } from "../backend/types";
 import crypto from "crypto";
+import { JobResultSchema, JobSearchReq } from "./types";
 
 const CORS_HEADERS = {
   headers: {
@@ -15,20 +17,54 @@ const server = Bun.serve({
   routes: {
     "/api/job/search": {
       POST: async (req) => {
-        const formdata = await req.json();
-        console.log(formdata);
-        const placeholder: JobSchema[] = Array(5)
-          .fill(0)
-          .map(() => ({
-            id: crypto.randomUUID(),
-            company: "Google",
-            title: "Software Engineer",
-            location: "San Francisco",
-            description:
-              "We are looking for a Software Engineer to join our team. The ideal candidate should have a strong background in software engineering and be comfortable working in a team.",
-            source: "https://www.linkedin.com/jobs/view/3321370400/",
-          }));
-        return Response.json(placeholder, CORS_HEADERS);
+        const data = await req.json();
+
+        const parsed = JobSearchReq.safeParse(data);
+
+        if (!parsed.success) {
+          return Response.json(
+            { error: parsed.error.issues[0]?.message },
+            CORS_HEADERS,
+          );
+        }
+
+        const apiKey = process.env.SERPAPI_API_KEY!;
+
+        console.log(apiKey);
+
+        const { search, location, type } = parsed.data;
+        const params = new URLSearchParams({
+          engine: "google_jobs",
+          q: search + type ? ` ${type}` : "",
+          hl: "en",
+          api_key: process.env.SERPAPI_API_KEY!,
+        });
+
+        if (location) {
+          params.append("location", location);
+        }
+
+        const url = `https://serpapi.com/search?${params.toString()}`;
+
+        const res = await fetch(url);
+        const json = (await res.json()) as any;
+
+        const results = json.jobs_results;
+        console.log("results:", results);
+
+        const parsedResults = z.array(JobResultSchema).safeParse(results);
+        console.log("parsedResults:", parsedResults);
+
+        if (!parsedResults.success) {
+          return Response.json(
+            { error: parsedResults.error.issues[0]?.message },
+            CORS_HEADERS,
+          );
+        }
+
+        // console.log(parsedResults.data);
+
+        return Response.json(parsedResults.data, CORS_HEADERS);
       },
     },
 

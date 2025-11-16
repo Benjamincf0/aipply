@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -16,9 +17,11 @@ import {
   SelectContent,
   SelectTrigger,
 } from "@/components/ui/select";
+import { JobResultSchema } from "@/dummy-backend/types";
+import Link from "next/link";
 
 type ResultsProps = {
-  data: JobSchema[] | undefined;
+  data: JobResultSchema[] | undefined;
   formRef: React.RefObject<HTMLFormElement>;
 };
 
@@ -52,7 +55,7 @@ export default function Results({ data, formRef }: ResultsProps) {
           style={{ gridAutoRows: "min-content" }}
         >
           {data.map((job) => (
-            <JobCard key={job.id} job={job} />
+            <JobCard key={job.job_id} job={job} />
           ))}
         </div>
       </div>
@@ -61,12 +64,14 @@ export default function Results({ data, formRef }: ResultsProps) {
   );
 }
 
-function JobCard({ job }: { job: JobSchema }) {
+function JobCard({ job }: { job: JobResultSchema }) {
   return (
-    <Card className="h-fit">
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle>{job.title}</CardTitle>
-        <CardDescription>{job.company}</CardDescription>
+        <CardDescription>
+          <p>{job.company_name}</p>
+        </CardDescription>
         <CardAction>
           <Button
             variant="ghost"
@@ -75,8 +80,40 @@ function JobCard({ job }: { job: JobSchema }) {
           >
             Apply
           </Button>
+          <Button variant="link" asChild className="text-muted-foreground p-0">
+            <Link
+              href={job.share_link}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Share
+            </Link>
+          </Button>
         </CardAction>
       </CardHeader>
+      <CardContent className="flex flex-col gap-2">
+        <p>Apply links:</p>
+        <div className="flex flex-wrap gap-x-1 gap-y-1 overflow-hidden">
+          {job.apply_options.map((option) => (
+            <Button
+              className="bg-secondary max-w-full"
+              key={option.title}
+              variant="link"
+              size="sm"
+              asChild
+            >
+              <Link
+                href={option.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate"
+              >
+                {option.title}
+              </Link>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 }

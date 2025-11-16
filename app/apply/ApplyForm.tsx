@@ -10,11 +10,12 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useDebounceCallback } from "usehooks-ts";
+import { JobResultSchema } from "@/dummy-backend/types";
+// import { useDebounceCallback } from "usehooks-ts";
 import z from "zod";
 
 type ApplyFormProps = {
-  setData: (data: JobSchema[] | undefined) => void;
+  setData: (data: JobResultSchema[] | undefined) => void;
   formRef: React.RefObject<HTMLFormElement>;
 };
 
@@ -39,21 +40,23 @@ export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
       });
 
       if (!res.ok) {
-        return;
+        return setData([]);
       }
 
       const data = await res.json();
-      const parsedData = z.array(JobSchema).safeParse(data);
+      const parsedData = z.array(JobResultSchema).safeParse(data);
+
+      console.log(parsedData);
 
       if (!parsedData.success) {
-        return;
+        return setData([]);
       }
 
       setData(parsedData.data);
     }
   }
 
-  const debounced = useDebounceCallback(submit, 500);
+  // const debounced = useDebounceCallback(submit, 500);
 
   return (
     <form
@@ -61,7 +64,9 @@ export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
       onSubmit={handleSubmit}
       ref={formRef}
     >
-      <Field onChange={debounced}>
+      <Field
+      // onChange={debounced}
+      >
         <FieldLabel htmlFor="search">Search</FieldLabel>
         <Input
           required
@@ -70,20 +75,25 @@ export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
           name="search"
         />
       </Field>
-      <Field onChange={debounced}>
+      <Field
+      // onChange={debounced}
+      >
         <FieldLabel htmlFor="location">Location</FieldLabel>
         <Input
           required
           placeholder="City, state, or country"
           id="location"
           name="location"
-          onChange={debounced}
+          // onChange={debounced}
         />
       </Field>
-      <Field className="flex-1" onChange={debounced}>
+      <Field
+        className="flex-1"
+        // onChange={debounced}
+      >
         <FieldLabel htmlFor="type">Type</FieldLabel>
-        <Select defaultValue="">
-          <SelectTrigger id="type" name="type">
+        <Select defaultValue="" name="type">
+          <SelectTrigger id="type">
             <SelectValue placeholder="type" />
           </SelectTrigger>
           <SelectContent>
@@ -96,7 +106,10 @@ export default function ApplyForm({ setData, formRef }: ApplyFormProps) {
           </SelectContent>
         </Select>
       </Field>
-      <Field className="flex-1" onChange={debounced}>
+      <Field
+        className="flex-1"
+        // onChange={debounced}
+      >
         <FieldLabel htmlFor="start">Start date</FieldLabel>
         <Input placeholder="YYYY-MM-DD" id="start" name="start" type="date" />
       </Field>

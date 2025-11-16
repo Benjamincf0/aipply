@@ -3,10 +3,10 @@
 import { useRef, useState } from "react";
 import ApplyForm from "./ApplyForm";
 import Results from "./Results";
-import { JobSchema } from "@/backend/types";
+import { JobResultSchema } from "@/dummy-backend/types";
 
 export default function ApplyPage() {
-  const [data, setData] = useState<JobSchema[] | undefined>([]);
+  const [data, setData] = useState<JobResultSchema[] | undefined>([]);
   const formRef = useRef<HTMLFormElement>(null!);
 
   return (
