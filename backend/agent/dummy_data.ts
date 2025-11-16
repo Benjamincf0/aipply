@@ -54,6 +54,7 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
       institution: "University of California, Berkeley",
       degree: "Bachelor of Science",
       field: "Computer Science",
+      startDate: "September 2021",
       graduationDate: "May 2025",
       gpa: "3.8",
     },

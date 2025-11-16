@@ -302,6 +302,8 @@ export async function fillApplicationForm(
 
     const MAX_PAGES = 10;
     let currentPage = 0;
+    let previousFieldCount = -1;
+    let noProgressCount = 0;
 
     while (currentPage < MAX_PAGES) {
       currentPage++;
@@ -378,33 +380,114 @@ export async function fillApplicationForm(
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Check for remaining empty fields
-      const emptyFields = await stagehand.observe(
-        "Find any remaining empty or unfilled form fields (text inputs, textareas, dropdowns, radio buttons)",
+      // Check for remaining empty fields and prioritize required ones
+      const allFields = await stagehand.observe(
+        "Find all empty form fields including text inputs, textareas, dropdowns, radio buttons, and checkboxes",
       );
 
-      console.log(`\nFound ${emptyFields.length} remaining unfilled fields`);
+      console.log(`\nFound ${allFields.length} remaining unfilled fields`);
 
-      // Use agent for remaining fields
-      if (emptyFields.length > 0 && emptyFields.length < 20) {
-        console.log("Using AI agent for remaining fields...");
+      // Separate required and optional fields
+      const requiredFields = allFields.filter(
+        (field: any) =>
+          field.description?.toLowerCase().includes("*") ||
+          field.description?.toLowerCase().includes("required"),
+      );
+      const optionalFields = allFields.filter(
+        (field: any) =>
+          !field.description?.toLowerCase().includes("*") &&
+          !field.description?.toLowerCase().includes("required"),
+      );
 
-        for (let i = 0; i < Math.min(emptyFields.length, 10); i++) {
-          const result = await agent.execute({
-            instruction:
-              "Fill the next empty field with appropriate information from the applicant profile. Use real data only.",
-            maxSteps: 3,
-          });
+      console.log(
+        `  - ${requiredFields.length} required fields, ${optionalFields.length} optional fields`,
+      );
 
-          if (result.success) {
-            console.log(`Agent filled field ${i + 1}`);
+      // Process required fields first, then optional
+      const fieldsToFill = [...requiredFields, ...optionalFields];
+
+      if (fieldsToFill.length > 0 && fieldsToFill.length < 20) {
+        console.log("Using AI agent to fill fields intelligently...");
+
+        for (let i = 0; i < Math.min(fieldsToFill.length, 15); i++) {
+          const field = fieldsToFill[i];
+          const fieldDescription = field.description || "unknown field";
+          const isRequired =
+            fieldDescription.includes("*") ||
+            fieldDescription.toLowerCase().includes("required");
+
+          console.log(
+            `\n[${i + 1}/${Math.min(fieldsToFill.length, 15)}] Processing: "${fieldDescription}" ${isRequired ? "(REQUIRED)" : "(optional)"}`,
+          );
+
+          try {
+            // Use agent to intelligently fill this specific field
+            const result = await agent.execute({
+              instruction: `You need to fill a form field. Here's what you should do:
+
+                FIELD: "${fieldDescription}"
+                ${isRequired ? "⚠️ THIS FIELD IS REQUIRED - YOU MUST FILL IT" : ""}
+
+                INSTRUCTIONS:
+                1. If this is a standard field (name, email, phone, address, LinkedIn, GitHub, etc.), use the EXACT value from the applicant profile
+                2. If this is asking about education (program, major, degree, school, university, year, graduation date):
+                - Education: ${applicantProfile.education[0]?.degree} in ${applicantProfile.education[0]?.field} at ${applicantProfile.education[0]?.institution}
+                - Graduation: ${applicantProfile.education[0]?.graduationDate}
+                - To calculate current year: If graduation is ${applicantProfile.education[0]?.graduationDate}, and it's currently November 2025, calculate backward (e.g., graduating May 2025 = likely in 4th year or final semester)
+                3. If this is asking about work experience, availability, or authorization, use the relevant data from the profile
+                4. If this is a text area asking "why you're a good fit", "what sets you apart", "tell us about yourself", etc.:
+                - Write a brief (2-3 sentences) answer highlighting: ${applicantProfile.education[0]?.degree} student, ${applicantProfile.workExperience.length} internship experiences, skills in ${applicantProfile.technicalSkills.slice(0, 5).join(", ")}
+                5. If this is a dropdown/select, choose the most appropriate option
+                6. If this is a yes/no radio button about work authorization, use: ${applicantProfile.workAuthorization ? "Yes" : "No"}
+                7. If this is a yes/no radio button about sponsorship, use: ${applicantProfile.requiresSponsorship ? "Yes" : "No"}
+                8. If asking about relocation, use: ${applicantProfile.willingToRelocate ? "Yes" : "No"}
+
+                REMEMBER:
+                - Use actual data from the profile above, NEVER use placeholder text
+                - For questions not directly in the profile, infer intelligently from the available data
+                - For open-ended questions, write brief, professional answers using the applicant's background
+
+                Now fill this field.
+              `,
+              maxSteps: 4,
+            });
+
+            if (result.success) {
+              console.log(`Successfully filled field`);
+            } else {
+              console.log(`Failed to fill field`);
+            }
+          } catch (error: any) {
+            console.log(`Error filling field: ${error.message}`);
           }
 
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 800));
         }
+
+        // Check if we made progress
+        if (allFields.length === previousFieldCount) {
+          noProgressCount++;
+          console.log(
+            `\nNo progress made (${noProgressCount}/3) - same number of unfilled fields`,
+          );
+
+          if (noProgressCount >= 3) {
+            console.log(
+              "Stuck after 3 attempts with no progress. Trying to proceed...",
+            );
+            // Reset counter and try to move forward
+            noProgressCount = 0; // TODO: smth idk
+          }
+        } else {
+          noProgressCount = 0;
+          console.log(
+            `\nProgress: ${previousFieldCount} → ${allFields.length} unfilled fields`,
+          );
+        }
+        previousFieldCount = allFields.length;
       }
 
-      // Check for submit button (we're done!)
+      // Check for submit button (ggs were done)
       const submitButton = await stagehand.observe(
         "Find final submit or 'soumettre' button (not next/continue)",
       );
