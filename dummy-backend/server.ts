@@ -297,6 +297,11 @@ const server = Bun.serve({
             applications,
           };
           ws.send(JSON.stringify(msg));
+
+          setTimeout(() => {
+            for (const job of applications) {
+            }
+          }, 1000);
         }
       }
     },
