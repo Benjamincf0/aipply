@@ -24,7 +24,9 @@ export default function ProfilesPage() {
         )}
         <NewProfile />
       </div>
-      <PdfViewer />
+      <>
+        <PdfViewer />
+      </>
     </div>
   );
 }

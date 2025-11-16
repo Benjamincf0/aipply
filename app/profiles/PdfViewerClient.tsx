@@ -29,8 +29,8 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
 
   return (
     <div className="bg-background flex h-full flex-1 flex-col overflow-hidden rounded-2xl">
-      {/* Controls remain the same */}
-      <div className="border-border flex items-center justify-between gap-2 border-b p-3">
+      {/* Toolbar */}
+      <div className="border-border flex flex-none items-center justify-between gap-2 border-b p-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setZoom(Math.max(50, zoom - 10))}
@@ -75,8 +75,8 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
       </div>
 
       {/* PDF Display */}
-      <div className="text-editor-text mb-5 h-full overflow-auto">
-        <div className="flex flex-1 items-start justify-center overflow-hidden p-8">
+      <div className="text-editor-text mb-5 h-full flex-1 overflow-auto">
+        <div className="flex min-h-full justify-center p-8">
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
