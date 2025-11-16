@@ -16,7 +16,7 @@ The main class can be imported as `Stagehand` from `@browserbasehq/stagehand`.
 import { Stagehand } from "@browserbasehq/stagehand";
 
 const stagehand = new Stagehand({
-  env: "LOCAL", // or "BROWSERBASE"
+  env: "LOCAL", // or "BROWSERCASH"
   verbose: 2, // 0, 1, or 2
   modelName: "openai/gpt-4.1-mini", // or any supported model
 });

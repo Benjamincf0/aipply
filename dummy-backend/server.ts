@@ -20,8 +20,8 @@ let applications: ApplicationStatusSchema[] = [];
 
 const stagehand = new Stagehand({
   env: "LOCAL",
-  apiKey: process.env.BROWSERBASE_API_KEY,
-  projectId: process.env.BROWSERBASE_PROJECT_ID!,
+  apiKey: process.env.BROWSERCASH_API_KEY,
+  projectId: process.env.BROWSERCASH_PROJECT_ID!,
   // model: "google/gemini-2.5-computer-use-preview-10-2025",
   // model: "openai/computer-use-preview",
   model: "openai/gpt-5-mini",
