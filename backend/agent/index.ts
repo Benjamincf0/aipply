@@ -1,9 +1,6 @@
 import "dotenv/config";
 import { Stagehand } from "@browserbasehq/stagehand";
 import { APPLICANT_PROFILE } from "./dummy_data.js";
-import { getJobsFromJobBoard } from "./scrape_jobs.js";
-import { applyToJobs } from "./apply_job.js";
-import { INDEED_TEST_URL } from "./const.js";
 import { fillApplicationForm } from "./fill_application.js";
 
 let BROWSERBASE_PROJECT_ID: string;
@@ -22,7 +19,7 @@ try {
 async function main() {
   const stagehand = new Stagehand({
     env: "LOCAL",
-    model: "google/gemini-2.5-flash-lite",
+    model: "google/gemini-2.0-flash-lite",
   });
 
   try {

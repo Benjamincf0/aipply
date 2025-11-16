@@ -77,38 +77,48 @@ export async function fillApplicationForm(
 
     // Use Stagehand's agent to intelligently fill out the form
     const agent = stagehand.agent({
-      systemPrompt: `You are an AI assistant helping to fill out job application forms. You have access to the applicant's complete information.
+      systemPrompt: `You are an AI assistant helping to fill out job application forms. 
+
+        IMPORTANT: Use the applicant information provided below to fill form fields. Match the field label/question to the appropriate data.
 
         ${applicantContext}
 
-        Your task is to fill out form fields ONE AT A TIME. For each field you encounter:
-        1. Identify the field label/question
-        2. Determine the appropriate value from the applicant information above
-        3. Fill the field with that value
-        4. For unexpected questions, use your best judgment based on the applicant's profile
-        5. For file upload fields (resume/CV), skip them (they will be handled separately)
-        6. After filling a field, move to the next empty field
-        7. When all fields on the current page are filled, look for a "Next" or "Continue" button and click it
-        8. IMPORTANT: When you see a "Submit" or "Submit Application" button, DO NOT CLICK IT. Instead, report that you've reached the final submission page.
+        RULES:
+        1. Always use actual values from the applicant information above - NEVER use placeholder text like "string"
+        2. Match form field labels to the appropriate applicant data (e.g., "First Name" → "${applicantProfile.firstName}")
+        3. For dropdown/select fields, choose the option that best matches the applicant's data
+        4. For yes/no questions, use your best judgment based on the applicant's profile
+        5. For file uploads, skip them (handled separately)
+        6. Fill each field with real, specific information from the applicant profile
 
-        Work methodically: fill one field, then move to the next. Be thorough and fill every field you can.`,
+        Work methodically and accurately.`,
     });
-    const MAX_ITERATIONS = 50;
+    const MAX_ITERATIONS = 100;
     let iteration = 0;
     let consecutiveFailures = 0;
+    let consecutiveNoFieldsFound = 0;
 
     const applyButton = await stagehand.observe(
-      "Find any 'Apply' or 'Postuler'button",
+      "Find any 'Apply' or 'Postuler'button. Ignore 'Apply to Indeed' or 'Apply with LinkedIn' buttons.",
     );
     if (applyButton.length > 0) {
+      console.log("Found apply button, clicking...");
       await stagehand.act(applyButton[0]);
-      await page.waitForLoadState("networkidle", 2000);
+      await page
+        .waitForLoadState("networkidle", { timeout: 10000 })
+        .catch(() => {
+          console.log("Initial page load timeout (continuing anyway)");
+        });
+      // Give the page a moment to settle after clicking apply
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
     while (iteration < MAX_ITERATIONS) {
       iteration++;
 
-      await page.waitForLoadState("domcontentloaded", 1000).catch(() => {});
+      await page
+        .waitForLoadState("domcontentloaded", { timeout: 5000 })
+        .catch(() => {});
       const errors = await stagehand.observe(
         "Find any error messages or validation warnings",
       );
@@ -123,7 +133,7 @@ export async function fillApplicationForm(
         // Try to find and correct the invalid field
         await agent.execute({
           instruction:
-            "Fix the validation error by re-entering the correct value",
+            "Fix the validation error by re-entering the correct value from the applicant information. Use the actual applicant data, not placeholder text.",
           maxSteps: 3,
         });
         continue;
@@ -169,15 +179,28 @@ export async function fillApplicationForm(
       }
 
       const fields = await stagehand.observe(
-        "Find all unfilled form inputs, selects, checkboxes, radio buttons",
+        "Find all empty or unfilled text inputs, text areas, dropdowns, and radio buttons that need to be filled",
       );
+      console.log(
+        `Iteration ${iteration}: Found ${fields.length} unfilled fields`,
+      );
+
       if (fields.length === 0) {
         // all fields are filled, find next or submit button
+        console.log(
+          "No unfilled fields found, looking for next/submit button...",
+        );
+        consecutiveNoFieldsFound++;
+
         const nextButton = await stagehand.observe(
           "Find next/continue button.",
         );
         const submitButton = await stagehand.observe(
           "Find final submit button.",
+        );
+
+        console.log(
+          `Found ${submitButton.length} submit buttons, ${nextButton.length} next buttons`,
         );
 
         if (submitButton.length > 0) {
@@ -187,21 +210,45 @@ export async function fillApplicationForm(
           return "submitted";
         }
         if (nextButton.length > 0) {
+          console.log("Clicking next button...");
           await stagehand.act(nextButton[0]);
-          await page.waitForLoadState("networkidle", 2000);
+          await page
+            .waitForLoadState("networkidle", { timeout: 10000 })
+            .catch(() => {
+              console.log("Next page load timeout (continuing anyway)");
+            });
           consecutiveFailures = 0;
+          consecutiveNoFieldsFound = 0;
           iteration = 0;
           continue;
         }
+
+        // If no fields, no next button, and no submit button for multiple iterations, likely stuck
+        if (consecutiveNoFieldsFound > 5) {
+          console.log(
+            "No fields or buttons found for multiple iterations, likely completed or stuck",
+          );
+          return "partial";
+        }
+        console.log("No next/submit buttons found, will retry...");
+        // Wait a bit for page to load
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         consecutiveFailures++;
       } else {
         consecutiveFailures = 0;
+        consecutiveNoFieldsFound = 0;
+        console.log(`Attempting to fill a field...`);
         const result = await agent.execute({
-          instruction: `Fill the next empty field.`,
+          instruction: `Find the next empty form field and fill it with the appropriate value from the applicant information in your system prompt. Use the actual data (names, email, phone, etc.) - do NOT use placeholder text. Match the field label to the correct applicant data.`,
           maxSteps: 5,
           highlightCursor: true,
         });
-        await page.waitForLoadState("networkidle", 2000);
+        console.log(
+          `Agent execution result: ${result.success ? "Success" : "Failed"}`,
+        );
+        await page
+          .waitForLoadState("networkidle", { timeout: 5000 })
+          .catch(() => {});
         if (result.success === false) {
           consecutiveFailures++;
         }
