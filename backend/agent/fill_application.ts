@@ -97,6 +97,14 @@ export async function fillApplicationForm(
     let iteration = 0;
     let consecutiveFailures = 0;
 
+    const applyButton = await stagehand.observe(
+      "Find any 'Apply' or 'Postuler'button",
+    );
+    if (applyButton.length > 0) {
+      await stagehand.act(applyButton[0]);
+      await page.waitForLoadState("networkidle", 2000);
+    }
+
     while (iteration < MAX_ITERATIONS) {
       iteration++;
 

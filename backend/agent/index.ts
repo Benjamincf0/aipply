@@ -22,7 +22,7 @@ try {
 async function main() {
   const stagehand = new Stagehand({
     env: "LOCAL",
-    model: "google/gemini-2.0-flash-lite",
+    model: "google/gemini-2.5-flash-lite",
   });
 
   try {
@@ -32,7 +32,7 @@ async function main() {
     const GIVEN_URL = [
       "https://applynow.net.au/jobs/ni/BIL202530-software-firmware-developer-intern",
       "https://durabuiltdoorswindows.applytojob.com/apply/ZFqbK3gzHV/Engineering-COOP?source=Our%20Career%20Page%20Widget",
-      "https://career5.successfactors.eu/careers?company=SAP",
+      "https://careers.mss.ca/fr/jobs/6631674-verification-de-logiciels-embarques-stage-co-op?ittk=HIUYBWZWMQ",
     ];
 
     for (const url of GIVEN_URL) {
