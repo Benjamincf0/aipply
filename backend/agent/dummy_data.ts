@@ -8,7 +8,7 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
   phone: "+1-555-123-4567",
   location: "San Francisco, CA, USA",
   city: "San Francisco",
-  state: "CA",
+  state: "California (CA)",
   country: "United States",
   postalCode: "94102",
   streetAddress: "123 Main St",
@@ -55,6 +55,7 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
       degree: "Bachelor of Science",
       field: "Computer Science",
       startDate: "September 2021",
+      currentYear: 2,
       graduationDate: "May 2025",
       gpa: "3.8",
     },
@@ -149,6 +150,8 @@ export const APPLICANT_PROFILE: ApplicantProfile = {
     "18 months",
     "24 months",
   ],
+
+  heardAboutUs: "Indeed",
   // Resume
   resumePath: "./resume.pdf",
 };
@@ -184,6 +187,8 @@ ${APPLICANT_PROFILE.education
   .map(
     (edu, idx) => `${idx + 1}. ${edu.degree} in ${edu.field}
    Institution: ${edu.institution}
+    Start Date: ${edu.startDate}
+   Current Year: ${edu.currentYear || "N/A"}
    Graduation: ${edu.graduationDate}
    GPA: ${edu.gpa || "N/A"}`,
   )
@@ -208,5 +213,14 @@ Requires Sponsorship: ${APPLICANT_PROFILE.requiresSponsorship ? "Yes" : "No"}
 Willing to Relocate: ${APPLICANT_PROFILE.willingToRelocate ? "Yes" : "No"}
 Expected Salary: ${APPLICANT_PROFILE.expectedSalary || "N/A"}
 Notice Period: ${APPLICANT_PROFILE.noticePeriod || "N/A"}
+
+Eligible to Work: ${APPLICANT_PROFILE.legallyAllowedToWork ? "Yes" : "No"}
+Eligible to Work United States: ${
+  APPLICANT_PROFILE.legallyAllowedToWorkInUnitedStates ? "Yes" : "No"
+}
+Eligible to Work Canada: ${APPLICANT_PROFILE.legallyAllowedToWorkInCanada ? "Yes" : "No"}
+
+Eligible for Internship: ${APPLICANT_PROFILE.eligibleForInternship ? "Yes" : "No"}
+Eligible for Co-op: ${APPLICANT_PROFILE.eligibleForCoop ? "Yes" : "No"}
 
 Cover Letter: ${APPLICANT_PROFILE.coverLetter || "N/A"}`;
