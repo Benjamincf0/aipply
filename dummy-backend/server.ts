@@ -6,6 +6,7 @@ import {
   WebSocketMessageSchema,
 } from "./types";
 import type { Action } from "../app/Context.tsx";
+import { Stagehand } from "@browserbasehq/stagehand";
 
 const CORS_HEADERS = {
   headers: {
@@ -16,6 +17,20 @@ const CORS_HEADERS = {
 };
 
 let applications: ApplicationStatusSchema[] = [];
+
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  apiKey: process.env.BROWSERBASE_API_KEY,
+  projectId: process.env.BROWSERBASE_PROJECT_ID!,
+  // model: "google/gemini-2.5-computer-use-preview-10-2025",
+  // model: "openai/computer-use-preview",
+  model: "openai/gpt-5-mini",
+  // model: "google/gemini-2.5-flash",
+  // llmClient: huggingFaceClient,
+  localBrowserLaunchOptions: {
+    executablePath: "/Applications/Chromium.app/Contents/MacOS/Chromium",
+  },
+});
 
 const server = Bun.serve({
   port: 8080,
@@ -266,25 +281,15 @@ const server = Bun.serve({
 
       switch (parsed.data.type) {
         case "application/add": {
-          const links = z
-            .object({
-              profileId: z.number(),
-              jobs: z.array(JobResultSchema),
-            })
-            .safeParse(parsed.data.data);
-
-          if (!links.success) {
-            console.log("failed to parse links", links.error.issues);
-            return;
-          }
+          const data = parsed.data.data;
 
           applications = [
             ...applications,
-            ...links.data.jobs.map(
+            ...data.jobs.map(
               (t) =>
                 ({
                   job: t,
-                  profileId: links.data.profileId,
+                  profileId: data.profileId,
                   sessionId: "asdf",
                   status: "pending",
                 }) as const,
@@ -298,6 +303,7 @@ const server = Bun.serve({
           ws.send(JSON.stringify(msg));
 
           setTimeout(async () => {
+            let i = 0;
             for (const job of applications) {
               job.status = "running";
               job.startDate = new Date().toISOString();
@@ -308,10 +314,10 @@ const server = Bun.serve({
               ws.send(JSON.stringify(m));
 
               await new Promise((resolve) =>
-                setTimeout(resolve, Math.random() * 3000),
+                setTimeout(resolve, Math.random() * 3000 + 3000),
               );
 
-              job.status = "completed";
+              job.status = i === 0 ? "failed" : "completed";
               job.completedDate = new Date().toISOString();
 
               m = {
@@ -319,8 +325,9 @@ const server = Bun.serve({
                 application: job,
               };
               ws.send(JSON.stringify(m));
+              i++;
             }
-          }, 1000);
+          }, 0);
         }
       }
     },

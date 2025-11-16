@@ -52,14 +52,6 @@ export const ApplicationStatusSchema = z.object({
   profileId: z.number(),
 });
 
-export const WebSocketMessageSchema = z.object({
-  type: z.literal("application/add"),
-  data: z.object({
-    profileId: z.number(),
-    jobs: z.array(JobResultSchema),
-  }),
-});
-
 export const ProjectSchema = z.object({
   name: z.string(),
   description: z.string(),
@@ -151,6 +143,15 @@ export const ApplicantProfileSchema = z.object({
   interestedTermLength: z.array(z.string()).optional(),
   // Resume
   resumePath: z.string(),
+  profileId: z.number(),
+});
+
+export const WebSocketMessageSchema = z.object({
+  type: z.literal("application/add"),
+  data: z.object({
+    profileId: z.number(),
+    jobs: z.array(JobResultSchema),
+  }),
 });
 
 export type JobSearchReq = z.infer<typeof JobSearchReq>;
