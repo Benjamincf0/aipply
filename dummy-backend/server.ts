@@ -296,7 +296,6 @@ const server = Bun.serve({
             type: "setApplications",
             applications,
           };
-          console.log("msg:", msg);
           ws.send(JSON.stringify(msg));
         }
       }
