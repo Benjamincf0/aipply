@@ -22,10 +22,10 @@ export default function ProfilesPage() {
             <ProfileList />
           </>
         )}
-        <NewProfile />
+        <NewProfile pdfUrl={pdfUrl} setPdfUrl={setPdfUrl} />
       </div>
       <>
-        <PdfViewer />
+        <PdfViewer pdfUrl={pdfUrl} setPdfUrl={setPdfUrl} />
       </>
     </div>
   );

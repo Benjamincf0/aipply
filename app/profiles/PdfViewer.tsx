@@ -15,9 +15,13 @@ const PdfViewerClient = dynamic(() => import("./PdfViewerClient"), {
   ),
 });
 
-export default function PdfViewer() {
+type PdfViewerProps = {
+  pdfUrl: string;
+  setPdfUrl: (url: string) => void;
+};
+
+export default function PdfViewer({ pdfUrl, setPdfUrl }: PdfViewerProps) {
   const { state } = use(Context);
-  const [pdfUrl, setPdfUrl] = useState<string>("");
 
   useEffect(() => {
     const selectedProfile = state.profiles.find(

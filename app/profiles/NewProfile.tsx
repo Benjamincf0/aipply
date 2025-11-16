@@ -12,7 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { use, useCallback, useRef, useState } from "react";
 import { Context, Profile } from "../Context";
 
-export default function NewProfile() {
+type NewProfileProps = {
+  pdfUrl: string;
+  setPdfUrl: (url: string) => void;
+};
+
+export default function NewProfile({ pdfUrl, setPdfUrl }: NewProfileProps) {
   const { dispatch } = use(Context);
 
   const file = useRef<File>(null);
@@ -39,6 +44,7 @@ export default function NewProfile() {
     dispatch({ type: "addProfile", profile });
 
     e.currentTarget.reset();
+    setPdfUrl("");
     file.current = null;
   }, []);
 
@@ -65,6 +71,9 @@ export default function NewProfile() {
 
                   if (f) {
                     file.current = f;
+                    const url = URL.createObjectURL(f);
+                    setPdfUrl(url);
+                    return () => URL.revokeObjectURL(url);
                   }
                 }}
               />
