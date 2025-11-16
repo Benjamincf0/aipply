@@ -1,6 +1,14 @@
 import { Page, Stagehand } from "@browserbasehq/stagehand";
 import { ApplicantProfile } from "../types.js";
 import { agentFillInfoPrompt } from "./const.js";
+import z from "zod";
+
+function getFileTypeFromQuery(query: string) {
+  if (query.toLowerCase().includes("resume")) return "resume";
+  if (query.toLowerCase().includes("cover letter")) return "cover letter";
+  if (query.toLowerCase().includes("transcript")) return "transcript";
+  return "file";
+}
 
 interface FieldMapping {
   patterns: string[];
@@ -278,6 +286,21 @@ async function smartFillForm(
       },
     ];
 
+    const inputFileFields = [
+      {
+        query: "Find resume/CV upload field",
+        value: applicantProfile.resumePath || "",
+      },
+      {
+        query: "Find cover letter upload field",
+        value: applicantProfile.coverLetterPath || "",
+      },
+      {
+        query: "Find School Transcript upload field",
+        value: applicantProfile.schoolTranscriptPath || "",
+      },
+    ];
+
     for (const field of commonFields) {
       if (!field.value) continue;
 
@@ -342,6 +365,39 @@ async function smartFillForm(
         }
       } catch (error: any) {
         console.log(`Could not fill ${field.query}: ${error.message}`);
+      }
+    }
+
+    for (const field of inputFileFields) {
+      if (!field.value) continue;
+      try {
+        const elements = await stagehand.observe(field.query);
+        if (elements.length > 0) {
+          const fileType = getFileTypeFromQuery(field.query);
+
+          const checkResumeUpload = await stagehand.extract(
+            `Detect if the applicant has uploaded their ${fileType}`,
+            z.boolean(),
+          );
+
+          if (checkResumeUpload) {
+            const resumePath = applicantProfile.resumePath || "";
+
+            if (resumePath) {
+              const fileInput = page.locator("input[type=file]");
+              await fileInput.setInputFiles(resumePath);
+            }
+          }
+          filledCount++;
+          console.log(
+            `Uploaded file for "${field.query}" with "${field.value}"`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+      } catch (error: any) {
+        console.log(
+          `Could not upload file for ${field.query}: ${error.message}`,
+        );
       }
     }
   } catch (error: any) {
@@ -496,7 +552,7 @@ export async function fillApplicationForm(
       // Dropdowns/Select elements
       try {
         const dropdowns = await stagehand.observe(
-          "Find all dropdown select menus that need a selection",
+          "Find all unselected dropdown select menus",
         );
         fieldsByType.dropdown.push(...dropdowns);
         console.log(`Found ${dropdowns.length} dropdown fields`);
@@ -518,7 +574,7 @@ export async function fillApplicationForm(
       // Required checkboxes (not already checked)
       try {
         const checkboxes = await stagehand.observe(
-          "Find all required checkboxes that are not yet checked",
+          "Find all checkboxes that are not yet checked",
         );
         fieldsByType.checkbox.push(...checkboxes);
         console.log(`Found ${checkboxes.length} required checkbox fields`);
@@ -563,7 +619,7 @@ export async function fillApplicationForm(
 
       let totalProcessed = 0;
       for (const { type, fields } of processingOrder) {
-        const fieldsToProcess = [...fields.required, ...fields.optional];
+        const fieldsToProcess = [...fields.required];
 
         if (fieldsToProcess.length === 0) continue;
 

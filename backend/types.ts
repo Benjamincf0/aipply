@@ -132,8 +132,10 @@ export const ApplicantProfileSchema = z.object({
   interestedTermLength: z.array(z.string()).optional(),
 
   heardAboutUs: z.string().optional(),
-  // Resume
+  // Uploads
   resumePath: z.string(),
+  coverLetterPath: z.string().optional(),
+  schoolTranscriptPath: z.string().optional(),
 });
 
 export type ApplicationStatusSchema = z.infer<typeof ApplicationStatusSchema>;
