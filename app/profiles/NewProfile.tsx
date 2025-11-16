@@ -18,7 +18,10 @@ type NewProfileProps = {
 };
 
 export default function NewProfile({ pdfUrl, setPdfUrl }: NewProfileProps) {
-  const { dispatch } = use(Context);
+  const { state, dispatch } = use(Context);
+  const selectedProfile = state.profiles.find(
+    (p) => p.id === state.selectedProfileId,
+  );
 
   const file = useRef<File>(null);
   const [showMore, setShowMore] = useState(false);

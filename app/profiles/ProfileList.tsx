@@ -34,6 +34,7 @@ export default function ProfileList() {
               Profile {profile.id}
             </SelectItem>
           ))}
+          <SelectItem value={"-1"}>+ Create</SelectItem>
         </SelectGroup>
       </SelectContent>
     </Select>

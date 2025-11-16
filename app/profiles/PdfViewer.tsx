@@ -31,6 +31,8 @@ export default function PdfViewer({ pdfUrl, setPdfUrl }: PdfViewerProps) {
       const url = URL.createObjectURL(selectedProfile.resume);
       setPdfUrl(url);
       return () => URL.revokeObjectURL(url);
+    } else {
+      setPdfUrl("");
     }
   }, [state]);
 
