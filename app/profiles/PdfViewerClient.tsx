@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import { Download } from "lucide-react";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
@@ -19,10 +20,52 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
   const [zoom, setZoom] = useState(100);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const [transformOrigin, setTransformOrigin] = useState("center center");
+
+  const containerRef = useRef<HTMLDivElement>(null);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setNumPages(numPages);
   }
+
+  function handleDownload() {
+    const link = document.createElement("a");
+    link.href = pdfUrl;
+    link.download = "document.pdf"; // Customize filename as needed
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  useEffect(() => {
+    const preventZoom = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("wheel", preventZoom, { passive: false });
+    return () => window.removeEventListener("wheel", preventZoom);
+  }, []);
+
+  // Handle Ctrl+Scroll zoom with mouse position
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+
+      // Get mouse position relative to container
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Set zoom origin to mouse position
+      setTransformOrigin(`${x}px ${y}px`);
+
+      // Update zoom (smoother with smaller increments)
+      const delta = e.deltaY > 0 ? -10 : 10;
+      const newZoom = Math.max(50, Math.min(200, zoom + delta));
+      setZoom(newZoom);
+    }
+  };
 
   const baseWidth = 595;
 
@@ -35,18 +78,24 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
             onClick={() => setZoom(Math.max(50, zoom - 10))}
             className="rounded-md border px-3 py-1 text-sm"
           >
-            Zoom Out
+            +
           </button>
           <button
             onClick={() => setZoom(Math.min(200, zoom + 10))}
             className="rounded-md border px-3 py-1 text-sm"
           >
-            Zoom In
+            -
           </button>
           <span className="px-2 text-center text-sm">{zoom}%</span>
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleDownload}
+            className="hover:bg-muted flex items-center rounded-md border p-2"
+          >
+            <Download className="inline-block h-4 w-4" />
+          </button>
           {numPages && numPages > 1 && (
             <div className="flex items-center gap-2">
               <button
@@ -74,25 +123,36 @@ export default function PdfViewerClient({ pdfUrl }: PdfViewerClientProps) {
       </div>
 
       {/* PDF Display */}
-      <div className="mb-5 max-h-[calc(100vh-200px)] w-full max-w-[595px] flex-1 overflow-auto p-8">
-        <Document
-          file={pdfUrl}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading={<div className="spinner">Loading...</div>}
-          className="inline-block max-w-full rounded-sm shadow-md"
+      <div
+        ref={containerRef}
+        onWheel={handleWheel}
+        className="mb-5 max-h-[calc(100vh-200px)] w-full max-w-[595px] flex-1 overflow-auto p-8"
+      >
+        <div
+          className="inline-block transition-transform duration-100 ease-out"
+          style={{
+            transform: `scale(${zoom / 100})`,
+            transformOrigin: transformOrigin,
+          }}
         >
-          {Array.from(new Array(numPages), (_, index) => (
-            <Page
-              key={`page_${index + 1}`}
-              pageNumber={index + 1}
-              // width={(baseWidth * zoom) / 100}
-              renderTextLayer={true}
-              renderAnnotationLayer={true}
-              width={baseWidth}
-              scale={zoom / 100}
-            />
-          ))}
-        </Document>
+          <Document
+            file={pdfUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={<div className="spinner">Loading...</div>}
+            className="inline-block max-w-full rounded-sm shadow-md"
+          >
+            {Array.from(new Array(numPages), (_, index) => (
+              <Page
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                // width={(baseWidth * zoom) / 100}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+                width={baseWidth}
+              />
+            ))}
+          </Document>
+        </div>
       </div>
     </div>
   );
