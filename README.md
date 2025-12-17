@@ -13,8 +13,7 @@ pnpm dev
 # or
 bun dev
 ```
-
-www.youtube.com/watch?time_continue=1&v=bvRZNONGbIc&embeds_referring_euri=https%3A%2F%2Fdevpost.com%2F&source_ve_path=MjM4NTE
+[![Demo](https://img.youtube.com/vi/bvRZNONGbIc/0.jpg)](www.youtube.com/watch?v=bvRZNONGbIc)
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
